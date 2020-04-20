@@ -1,0 +1,29 @@
+{
+  "name": "zefi-contracts",
+  "version": "1.0.0",
+  "description": "Ethereum Smart contracts for ZeFi wallet",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "ethereumjs-abi": "^0.6.8",
+    "ethereumjs-util": "^6.2.0",
+    "openzeppelin-solidity": "^2.1.3",
+    "web3": "^1.2.6"
+  },
+  "scripts": {
+    "test": "truffle test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/getZeFi/zefi-contracts.git"
+  },
+  "keywords": [],
+  "author": "ZeFi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/getZeFi/zefi-contracts/issues"
+  },
+  "homepage": "https://github.com/getZeFi/zefi-contracts"
+}
