@@ -713,13 +713,16 @@ contract CoreWallet is ERC721Receivable, ERC223Receiver, ERC1271 {
 
     function depositToInvestmentContract() public {
         InvestmentContract investmentContract = _getInvestmentContract();
-        IERC20 token = IERC20(investmentContract.getTokenAddress());
-        uint balance = token.balanceOf(address(this));
-        token.approve(address(investmentContract), balance);
+        address[] memory tokenAddresses = investmentContract.getTokenAddresses();
+        for(uint i = 0; i < tokenAddresses.length; i++) {
+          IERC20 token = IERC20(tokenAddresses[i]);
+          uint balance = token.balanceOf(address(this));
+          token.approve(address(investmentContract), balance);
+        }
         investmentContract.depositAll();
     }
 
-    function balanceOf() external view returns(uint) {
+    function balanceOf() external view returns(uint[] memory) {
         InvestmentContract investmentContract = _getInvestmentContract();
         return investmentContract.balanceOf(address(this));
     }

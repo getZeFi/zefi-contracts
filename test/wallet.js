@@ -18,8 +18,8 @@ contract('Wallet', accounts => {
     cDai = await CDaiMock.new(dai.address); 
     await dai.transfer(cDai.address, initialDaiBalance); 
     investmentContract = await InvestmentContract.new(
-      dai.address, 
-      cDai.address, 
+      [dai.address], 
+      [cDai.address], 
       zefiWalletAddress
     );
 
@@ -80,6 +80,7 @@ contract('Wallet', accounts => {
       .add(initialDaiBalance)
       .sub(fee)
     ));
+    
     //dai was invested twice, in the beforeEach() hook
     //and when we run sendEther() above
     const balance1 = initialDaiBalance
@@ -90,6 +91,6 @@ contract('Wallet', accounts => {
     const balance2 = balance1
       .add(interest2)
       .sub(fee2);
-    assert(daiBalances[4].eq(balance2));
+    assert(daiBalances[4][0].eq(balance2));
   });
 });

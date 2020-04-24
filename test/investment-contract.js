@@ -11,8 +11,8 @@ contract('InvestmentContract', accounts => {
     dai = await StandardTokenMock.new(admin, web3.utils.toWei('100'));
     cDai = await CDaiMock.new(dai.address); 
     investmentContract = await InvestmentContract.new(
-      dai.address, 
-      cDai.address, 
+      [dai.address], 
+      [cDai.address], 
       zefiWalletAddress
     );
 
