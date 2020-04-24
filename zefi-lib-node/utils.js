@@ -25,7 +25,16 @@ const funcHash = signature => {
   );
 };
 
+const sendTx = async ({ web3, tx, from, ...rest }) => {
+  const [gasLimit, gasPrice] = await Promise.all([
+    tx.estimateGas(),
+    web3.eth.getGasPrice()
+  ]);
+  return tx.send({ from, gas: gasLimit, gasPrice, ...rest });
+};
+
 module.exports = {
   numToBuffer,
-  funcHash
+  funcHash,
+  sendTx
 };

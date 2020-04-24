@@ -4,7 +4,7 @@ const InvestmentContract = artifacts.require('InvestmentContract.sol');
 
 contract('InvestmentContract', accounts => {
   let dai, cDai, investmentContract, zefiLib;
-  const [admin, wallet, zefiWallet] = [accounts[0], accounts[1], accounts[2]];
+  const [admin, zefiWalletAddress, walletAddress,] = accounts; 
   const initialDaiBalance = web3.utils.toBN(web3.utils.toWei('10')); 
   
   beforeEach(async () => {
@@ -13,35 +13,34 @@ contract('InvestmentContract', accounts => {
     investmentContract = await InvestmentContract.new(
       dai.address, 
       cDai.address, 
-      zefiWallet
+      zefiWalletAddress
     );
 
     await dai.transfer(cDai.address, initialDaiBalance); 
-    await dai.transfer(wallet, initialDaiBalance); 
+    await dai.transfer(walletAddress, initialDaiBalance); 
   });
 
   it('should deposit and withdraw tokens from cDai', async () => {
-    const amount = web3.utils.toBN(web3.utils.toWei('1'));
-    const interest = amount.div(web3.utils.toBN(10));
-    const fee = interest.div(web3.utils.toBN(10));
+    const interest = initialDaiBalance.div(web3.utils.toBN(10));
+    const fee = interest.div(web3.utils.toBN(10)); //10pct is deducted from interest
     let balance;
 
-    await dai.approve(investmentContract.address, amount, {from: wallet}); 
-    await investmentContract.deposit(amount, {from: wallet});
+    await dai.approve(investmentContract.address, initialDaiBalance, {from: walletAddress}); 
+    await investmentContract.depositAll({from: walletAddress});
     daiBalances = await Promise.all([
-      dai.balanceOf(wallet),
+      dai.balanceOf(walletAddress),
       dai.balanceOf(cDai.address),
       dai.balanceOf(investmentContract.address)
     ]);
-    assert(daiBalances[0].eq(initialDaiBalance.sub(amount)));
-    assert(daiBalances[1].eq(initialDaiBalance.add(amount)));
+    assert(daiBalances[0].isZero());
+    assert(daiBalances[1].eq(initialDaiBalance.add(initialDaiBalance)));
     assert(daiBalances[2].isZero());
 
-    await investmentContract.withdraw({from: wallet});
+    await investmentContract.withdrawAll({from: walletAddress});
     daiBalances = await Promise.all([
-      dai.balanceOf(wallet),
+      dai.balanceOf(walletAddress),
       dai.balanceOf(investmentContract.address),
-      dai.balanceOf(zefiWallet),
+      dai.balanceOf(zefiWalletAddress),
     ]);
     assert(daiBalances[0].eq(initialDaiBalance.add(interest).sub(fee)));
     assert(daiBalances[1].isZero());

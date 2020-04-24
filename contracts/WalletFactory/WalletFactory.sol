@@ -14,6 +14,12 @@ contract WalletFactory is FullWalletByteCode, HasNoEther, CloneFactory {
     ///  deployment contains all the Wallet code.
     address public cloneWalletAddress;
 
+    ///@dev can update investment smart contract
+    address public admin;
+
+    ////@dev the contract that auto-invest dai in wallet
+    address public investmentContract;
+
     /// @notice Emitted whenever a wallet is created
     /// @param wallet The address of the wallet created
     /// @param authorizedAddress The initial authorized address of the wallet
@@ -23,6 +29,7 @@ contract WalletFactory is FullWalletByteCode, HasNoEther, CloneFactory {
 
     constructor(address _cloneWalletAddress) public {
         cloneWalletAddress = _cloneWalletAddress;
+        admin = msg.sender;
     }
 
     /// @notice Used to deploy a wallet clone
@@ -187,5 +194,10 @@ contract WalletFactory is FullWalletByteCode, HasNoEther, CloneFactory {
         require(size > 0, "wallet must have code");
 
         emit WalletCreated(full, _authorizedAddress, true);
+    }
+
+    function updateInvestmentContract(address _investmentContract) external {
+      require(admin == msg.sender, 'only admin');
+      investmentContract = _investmentContract;
     }
 }

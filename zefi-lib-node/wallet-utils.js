@@ -11,7 +11,7 @@ const transact0 = async function (_data, _wallet, _sender) {
     .invoke0(
       `0x${_data.toString('hex')}`, 
     )
-    .send({ from: _sender });
+    .send({ from: _sender, gas: 4000000 });
   return receipt;
 };
 

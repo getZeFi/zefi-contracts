@@ -1,6 +1,7 @@
 const CloneableWalletConf = require('./contracts/CloneableWallet.json');
 const WalletFactoryConf = require('./contracts/WalletFactory.json');
 const walletUtils = require('./wallet-utils.js');
+const utils = require('./utils.js');
 
 const init = web3 => {
   const CloneableWallet = new web3.eth.Contract(CloneableWalletConf.abi);
@@ -11,17 +12,19 @@ const init = web3 => {
    * returns address of wallet factory
    */
   const createWalletFactory = async ({ from }) => { 
-    const cloneableWallet = await CloneableWallet
+    let tx;
+    tx = await CloneableWallet
       .deploy({
         data: CloneableWalletConf.bytecode
-      })
-      .send({ from, gas: 3771957 });
-    const walletFactory = await WalletFactory
+      });
+    const cloneableWallet = await utils.sendTx({web3, tx, from});
+
+    tx = await WalletFactory
       .deploy({
         data: WalletFactoryConf.bytecode, 
         arguments: [cloneableWallet.options.address]
-      })
-      .send({ from, gas: 3537759 });
+      });
+    const walletFactory = await utils.sendTx({web3, tx, from});
     return walletFactory.options.address;
   }
 
@@ -40,12 +43,18 @@ const init = web3 => {
       WalletFactoryConf.abi, 
       walletFactoryAddress
     );
-    const receipt = await walletFactory.methods.deployCloneWallet(
+    //const receipt = await walletFactory.methods.deployCloneWallet(
+    //  recoveryAddress,
+    //  authorizedAddress,
+    //  cosignerAddress
+    //)
+    //.send({ from, gas: 135500 });
+    const tx = await walletFactory.methods.deployCloneWallet(
       recoveryAddress,
       authorizedAddress,
       cosignerAddress
-    )
-    .send({ from, gas: 135500 });
+    );
+    const receipt = await utils.sendTx({web3, tx, from});
     return receipt.events.WalletCreated.returnValues.wallet;
   }
 

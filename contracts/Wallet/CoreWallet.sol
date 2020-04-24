@@ -4,6 +4,11 @@ import "../ERC721/ERC721Receivable.sol";
 import "../ERC223/ERC223Receiver.sol";
 import "../ERC1271/ERC1271.sol";
 import "../ECDSA.sol";
+import "../InvestmentContract.sol";
+
+interface IWalletFactory {
+    function investmentContract() external view returns(address);
+}
 
 
 /// @title Core Wallet
@@ -47,6 +52,9 @@ contract CoreWallet is ERC721Receivable, ERC223Receiver, ERC1271 {
     ///  shift this value right by 160 bits). Starts as `1 << 160` (`AUTH_VERSION_INCREMENTOR`)
     ///  See the comment on the `authorizations` variable for how this is used.
     uint256 public authVersion;
+
+    /// @notice pointer to the WalletFactory contract. Used to get address of InvestmentContract
+    IWalletFactory walletFactory; 
 
     /// @notice A mapping containing all of the addresses that are currently authorized to manage
     ///  the assets owned by this wallet.
@@ -199,6 +207,7 @@ contract CoreWallet is ERC721Receivable, ERC223Receiver, ERC1271 {
         authVersion = AUTH_VERSION_INCREMENTOR;
         // add initial authorized address
         authorizations[authVersion + uint256(_authorizedAddress)] = _cosigner;
+        walletFactory = IWalletFactory(msg.sender);
         
         emit Authorized(_authorizedAddress, _cosigner);
     }
@@ -607,6 +616,7 @@ contract CoreWallet is ERC721Receivable, ERC223Receiver, ERC1271 {
     ///  `<target(20),amount(32),datalength(32),data>`
     ///  If `datalength == 0`, the data field must be omitted
     function internalInvoke(bytes32 operationHash, bytes memory data) internal {
+
         // keep track of the number of operations processed
         uint256 numOps;
         // keep track of the result of each operation as a bit
@@ -620,6 +630,10 @@ contract CoreWallet is ERC721Receivable, ERC223Receiver, ERC1271 {
         // At an absolute minimum, the data field must be at least 85 bytes
         // <revert(1), to_address(20), value(32), data_length(32)>
         require(data.length >= 85, invalidLengthMessage);
+
+        //withdraw all dai
+        InvestmentContract investmentContract = _getInvestmentContract();
+        investmentContract.withdrawAll();
 
         // Forward the call onto its actual target. Note that the target address can be `self` here, which is
         // actually the required flow for modifying the configuration of the authorized keys and recovery address.
@@ -690,7 +704,27 @@ contract CoreWallet is ERC721Receivable, ERC223Receiver, ERC1271 {
             }
         }
 
+        //invest dai if any
+        depositToInvestmentContract();
+
         // emit single event upon success
         emit InvocationSuccess(operationHash, result, numOps);
+    }
+
+    function depositToInvestmentContract() public {
+        InvestmentContract investmentContract = _getInvestmentContract();
+        IERC20 token = IERC20(investmentContract.getTokenAddress());
+        uint balance = token.balanceOf(address(this));
+        token.approve(address(investmentContract), balance);
+        investmentContract.depositAll();
+    }
+
+    function balanceOf() external view returns(uint) {
+        InvestmentContract investmentContract = _getInvestmentContract();
+        return investmentContract.balanceOf(address(this));
+    }
+
+    function _getInvestmentContract() internal view returns(InvestmentContract) {
+      return InvestmentContract(walletFactory.investmentContract());
     }
 }
