@@ -4,7 +4,8 @@ import "../ERC721/ERC721Receivable.sol";
 import "../ERC223/ERC223Receiver.sol";
 import "../ERC1271/ERC1271.sol";
 import "../ECDSA.sol";
-import "../InvestmentContract.sol";
+import "../Investment/IInvestmentContract.sol";
+import 'openzeppelin-solidity/contracts/token/ERC20/IERC20.sol';
 
 interface IWalletFactory {
     function investmentContract() external view returns(address);
@@ -632,7 +633,7 @@ contract CoreWallet is ERC721Receivable, ERC223Receiver, ERC1271 {
         require(data.length >= 85, invalidLengthMessage);
 
         //withdraw all dai
-        InvestmentContract investmentContract = _getInvestmentContract();
+        IInvestmentContract investmentContract = _getInvestmentContract();
         investmentContract.withdrawAll();
 
         // Forward the call onto its actual target. Note that the target address can be `self` here, which is
@@ -712,7 +713,7 @@ contract CoreWallet is ERC721Receivable, ERC223Receiver, ERC1271 {
     }
 
     function depositToInvestmentContract() public {
-        InvestmentContract investmentContract = _getInvestmentContract();
+        IInvestmentContract investmentContract = _getInvestmentContract();
         address[] memory tokenAddresses = investmentContract.getTokenAddresses();
         for(uint i = 0; i < tokenAddresses.length; i++) {
           IERC20 token = IERC20(tokenAddresses[i]);
@@ -723,11 +724,11 @@ contract CoreWallet is ERC721Receivable, ERC223Receiver, ERC1271 {
     }
 
     function balanceOf() external view returns(uint[] memory) {
-        InvestmentContract investmentContract = _getInvestmentContract();
+        IInvestmentContract investmentContract = _getInvestmentContract();
         return investmentContract.balanceOf(address(this));
     }
 
-    function _getInvestmentContract() internal view returns(InvestmentContract) {
-      return InvestmentContract(walletFactory.investmentContract());
+    function _getInvestmentContract() internal view returns(IInvestmentContract) {
+      return IInvestmentContract(walletFactory.investmentContract());
     }
 }

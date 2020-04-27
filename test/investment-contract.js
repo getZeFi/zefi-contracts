@@ -1,6 +1,6 @@
 const StandardTokenMock = artifacts.require('Test/StandardTokenMock.sol');
 const CDaiMock = artifacts.require('Test/CDaiMock.sol');
-const InvestmentContract = artifacts.require('InvestmentContract.sol');
+const InvestmentContract = artifacts.require('Investment/InvestmentContractV1.sol');
 
 contract('InvestmentContract', accounts => {
   let dai, cDai, investmentContract, zefiLib;

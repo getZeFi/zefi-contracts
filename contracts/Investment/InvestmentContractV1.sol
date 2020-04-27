@@ -18,7 +18,7 @@ interface ICToken {
   function balanceOfUnderlying(address owner) external view returns(uint);
 }
 
-contract InvestmentContract {
+contract InvestmentContractV1 {
   using SafeMath for uint;
 
   struct Target {

@@ -6,15 +6,13 @@ Client library to interact with ZeFi smart contracts. Work both in nodeJS and in
 
 (for local development make sure to follow the readme at the root of this repo for deploying smart contracts)
 
-1. Download the code
+1. Setup the BlockchainDownload the code
 
-```
-git clone https://github.com/getZeFi/zefi-contracts
-```
+Follow the getting started instructions in the README file at the root of the project
 
 2. Installation
 
-In the package.json of your project, add manually a file dependency to this project:
+In the package.json of your project, add a file dependency to this project:
 
 ```
 ...

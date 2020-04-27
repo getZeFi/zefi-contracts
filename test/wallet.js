@@ -1,6 +1,6 @@
 const StandardTokenMock = artifacts.require('Test/StandardTokenMock.sol');
 const CDaiMock = artifacts.require('Test/CDaiMock.sol');
-const InvestmentContract = artifacts.require('InvestmentContract.sol');
+const InvestmentContract = artifacts.require('Investment/InvestmentContractV1.sol');
 const WalletFactory = artifacts.require('WalletFactory/WalletFactory.sol');
 const Wallet = artifacts.require('Wallet/CloneableWallet.sol');
 const ZefiLib = require('zefiLib').default;
