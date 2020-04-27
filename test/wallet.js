@@ -3,7 +3,7 @@ const CDaiMock = artifacts.require('Test/CDaiMock.sol');
 const InvestmentContract = artifacts.require('InvestmentContract.sol');
 const WalletFactory = artifacts.require('WalletFactory/WalletFactory.sol');
 const Wallet = artifacts.require('Wallet/CloneableWallet.sol');
-const ZefiLib = require('../zefi-lib-node');
+const ZefiLib = require('zefiLib').default;
 
 contract('Wallet', accounts => {
   let dai, cDai;
@@ -57,13 +57,12 @@ contract('Wallet', accounts => {
 
     const balanceBefore = web3.utils.toBN(await web3.eth.getBalance(recipientAddress));
     await zefiLib.sendEther({
-      sender: senderAddress,
-      recipient: recipientAddress,
+      from: senderAddress,
+      to: recipientAddress,
       amount: etherAmount, 
       walletAddress
     });
     const balanceAfter = web3.utils.toBN(await web3.eth.getBalance(recipientAddress));
-
     daiBalances = await Promise.all([
       dai.balanceOf(walletAddress),
       dai.balanceOf(investmentContract.address),

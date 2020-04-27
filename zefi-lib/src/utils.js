@@ -1,7 +1,7 @@
-const Web3 = require('web3');
-const ethUtils = require('ethereumjs-util');
-const abi = require('ethereumjs-abi');
-const BN = require('bn.js');
+import Web3Utils from 'web3-utils';
+import ethUtils from 'ethereumjs-util';
+import abi from 'ethereumjs-abi';
+import BN from 'bn.js';
 
 /**
  * Converts a number to a 32 byte padded hex encoded buffer
@@ -14,7 +14,7 @@ const numToBuffer = num => {
 
 const numToBufferWithN = (num, amt) => {
   return Buffer.from(
-    new Web3.utils.BN(Web3.utils.toHex(num).replace('0x', ''), 16).toString(16, amt),
+    new BN(Web3Utils.toHex(num).replace('0x', ''), 16).toString(16, amt),
     "hex"
   ); // number
 };
@@ -27,13 +27,13 @@ const funcHash = signature => {
 
 const sendTx = async ({ web3, tx, from, ...rest }) => {
   const [gasLimit, gasPrice] = await Promise.all([
-    tx.estimateGas(),
+    tx.estimateGas({ from }),
     web3.eth.getGasPrice()
   ]);
   return tx.send({ from, gas: gasLimit, gasPrice, ...rest });
 };
 
-module.exports = {
+export default {
   numToBuffer,
   funcHash,
   sendTx

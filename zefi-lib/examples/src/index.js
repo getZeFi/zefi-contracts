@@ -17,29 +17,33 @@ const init = async () => {
     walletFactoryAddress
   });
 
-  const etherAmount = 1000;
-  await zefiLib.sendEther({
-    sender, //authorizedAddress of wallet
-    recipient,
-    amount: etherAmount, 
-    walletAddress
-  });
+  //const etherAmount = ? 
+  //const from = ?
+  //const to = ?
+  //await zefiLib.sendEther({
+  //  from,  //authorizedAddress of wallet
+  //  to,
+  //  amount: etherAmount, 
+  //  walletAddress
+  //});
+  //return;
 
-  const tokenAddress = '0x478e7AeF57d7f951933dbabe0c17Cf751F0b1f55';
-  const tokenAmount = 1000;
-  await zefiLib.sendERC20Token({
-    sender, //authorizedAddress of wallet
-    recipient,
-    amount: tokenAmount,
-    walletAddress,
-    tokenAddress
-  });
+  //const tokenAddress = ?
+  //const tokenAmount = ?
+  //await zefiLib.sendERC20Token({
+  //  from, //authorizedAddress of wallet
+  //  to,
+  //  amount: tokenAmount,
+  //  walletAddress,
+  //  tokenAddress
+  //});
 }
 
 /**
- * Before running this script you need to:
- * deploy an erc20 token
- * update the tokenAddress
+ * Before running this you need to:
+ * - deploy an erc20 token
+ * - call
+ * update the tokenAddress 
  * send some ether and erc20 token to the wallet
  */
-//init();
+init();

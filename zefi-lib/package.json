@@ -2,7 +2,8 @@
   "name": "zefiLib",
   "version": "1.0.0",
   "description": "",
-  "main": "./dist/bundle.js",
+  "main": "./dist/node.bundle.js",
+  "browser": "./dist/web.bundle.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "node build.js && npx webpack-cli",
@@ -12,15 +13,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "Buffer": "0.0.0",
     "bn.js": "^5.1.1",
     "ethereumjs-abi": "^0.6.8",
     "ethereumjs-util": "^6.2.0",
-    "web3": "^1.2.6"
+    "web3-utils": "^1.2.7"
   },
   "devDependencies": {
     "webpack": "^4.43.0",
-    "webpack-cli": "^3.3.11",
-    "webpack-dev-server": "^3.10.3"
+    "webpack-cli": "^3.3.11"
   }
 }

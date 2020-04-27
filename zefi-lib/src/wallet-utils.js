@@ -1,18 +1,14 @@
-const utils = require('./utils.js'); 
+import utils from './utils.js'; 
 
 /**
- * 
  * @param {Buffer} _data 
  * @param {FullWallet} _wallet 
- * @param {string} _sender string in hex format (must be address from accounts array)
  */
-const transact0 = async function (_data, _wallet, _sender) {
-  const receipt = await _wallet.methods
+const transact0 = (_data, _wallet) => {
+  return _wallet.methods
     .invoke0(
-      `0x${_data.toString('hex')}`, 
-    )
-    .send({ from: _sender, gas: 4000000 });
-  return receipt;
+      `0x${_data.toString('hex')}` 
+    );
 };
 
 const erc20Transfer = (erc20Recipient, amount) => {
@@ -45,7 +41,7 @@ const txData = (revert, to, amount, dataBuff) => {
   return Buffer.concat(dataArr);
 };
 
-module.exports = {
+export default {
   transact0,
   erc20Transfer,
   txData
