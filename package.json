@@ -10,12 +10,14 @@
     "ethereumjs-abi": "^0.6.8",
     "ethereumjs-util": "^6.2.0",
     "openzeppelin-solidity": "^2.1.3",
+    "truffle-hdwallet-provider": "^1.0.17",
     "web3": "^1.2.6",
     "zefiLib": "file:./zefi-lib"
   },
   "scripts": {
     "test": "truffle test --network development",
-    "deploy": "truffle migrate --reset --network development"
+    "deploy": "truffle migrate --reset --network development",
+    "deploy-rinkeby": "truffle deploy --network rinkeby"
   },
   "repository": {
     "type": "git",
