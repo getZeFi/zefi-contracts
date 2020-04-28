@@ -1,46 +1,34 @@
 pragma solidity ^0.5.10;
-pragma experimental ABIEncoderV2;
-
-//import 'openzeppelin-solidity/contracts/token/ERC20/IERC20.sol';
-//import 'openzeppelin-solidity/contracts/math/SafeMath.sol';
 
 import './InvestmentContractBase.sol';
 import './IInvestmentContract.sol';
 
-interface CDai {
-  function mint(uint amount) external returns(uint);
-  function redeemUnderlying(uint amount) external;
-  function balanceOf(address owner) external view returns(uint);
-  function balanceOfUnderlying(address owner) external view returns(uint);
+contract IYToken {
+  function deposit(uint256 _amount) external;
+  function withdraw(uint256 _shares) external;
+  function getPricePerFullShare() public view returns (uint);
+  function balanceOf(address account) public view returns (uint256);
 }
 
-interface ICToken {
-  function mint(uint amount) external returns(uint);
-  function redeemUnderlying(uint amount) external;
-  function balanceOf(address owner) external view returns(uint);
-  function balanceOfUnderlying(address owner) external view returns(uint);
-}
-
-//contract InvestmentContractV1 {
-contract InvestmentContractV1 is InvestmentContractBase, IInvestmentContract {
+contract InvestmentContractV2 is InvestmentContractBase, IInvestmentContract {
 
   struct Target {
     IERC20 token;
-    ICToken cToken;
+    IYToken yToken;
     uint totalTokenInvested;
   }
   Target[] public targets;
 
   constructor(
     address[] memory _tokens, 
-    address[] memory _cTokens, 
+    address[] memory _yTokens, 
     address _zefiWallet
   ) public {
-    require(_tokens.length == _cTokens.length, 'tokens and cTokens must have same length');
+    require(_tokens.length == _yTokens.length, 'tokens and yTokens must have same length');
     for(uint i = 0; i < _tokens.length; i++) {
       targets.push(Target(
         IERC20(_tokens[i]),
-        ICToken(_cTokens[i]),
+        IYToken(_yTokens[i]),
         0
       ));
     }
@@ -66,11 +54,11 @@ contract InvestmentContractV1 is InvestmentContractBase, IInvestmentContract {
     tokenInvested[tokenAddress][msg.sender] = tokenInvested[tokenAddress][msg.sender].add(amount);
     target.totalTokenInvested = target.totalTokenInvested.add(amount);
 
-    //4. Approve token to be sent to compound
-    target.token.approve(address(target.cToken), amount);
+    //4. Approve token to be sent to yToken
+    target.token.approve(address(target.yToken), amount);
 
-    //5. send token to cToken
-    assert(target.cToken.mint(amount) == 0);
+    //5. send token to yToken
+    target.yToken.deposit(amount);
   }
 
   function withdrawAll() external {
@@ -80,12 +68,14 @@ contract InvestmentContractV1 is InvestmentContractBase, IInvestmentContract {
   }
   function _withdrawAll(Target storage target) internal {
     address tokenAddress = address(target.token);
-    //1. withdraw token from cToken
-    uint tokenBalance = target.cToken.balanceOfUnderlying(address(this));
-    uint amount = tokenBalance
+    //1. withdraw token from yToken
+    uint yTokenBalance = target.yToken.balanceOf(address(this));
+    uint price = target.yToken.getPricePerFullShare();
+    uint tokenEarnedBalance = yTokenBalance.mul(price).div(1 ether);
+    uint amount = tokenEarnedBalance
       .mul(tokenInvested[tokenAddress][msg.sender])
       .div(target.totalTokenInvested);
-    target.cToken.redeemUnderlying(amount);
+    target.yToken.withdraw(amount.mul(1 ether).div(price));
 
     //2. transfer fee
     uint fee = calculateFee(tokenAddress, amount);
@@ -93,6 +83,7 @@ contract InvestmentContractV1 is InvestmentContractBase, IInvestmentContract {
 
     //3. transfer token to caller 
     target.token.transfer(msg.sender, amount.sub(fee));
+    //target.token.transfer(msg.sender, amount.mul(1 ether).div(price).sub(fee));
    
     //4. update internal token balance
     target.totalTokenInvested = target.totalTokenInvested
@@ -122,7 +113,7 @@ contract InvestmentContractV1 is InvestmentContractBase, IInvestmentContract {
   }
 
   function _balanceOf(Target storage target, address owner) internal view returns(uint) {
-    uint tokenBalance = target.cToken.balanceOfUnderlying(address(this));
+    uint tokenBalance = _balanceOfUnderlying(target.yToken);
     address tokenAddress = address(target.token);
     uint amount = tokenBalance
       .mul(tokenInvested[tokenAddress][owner])
@@ -130,4 +121,11 @@ contract InvestmentContractV1 is InvestmentContractBase, IInvestmentContract {
     uint fee = calculateFee(tokenAddress, amount);
     return amount.sub(fee);
   }
+
+  function _balanceOfUnderlying(IYToken yToken) internal view returns(uint) {
+    uint pricePerShare = yToken.getPricePerFullShare();
+    uint yTokenAmount = yToken.balanceOf(address(this));
+    return yTokenAmount.mul(pricePerShare).div(1 ether); //getPricePerFullShare() is scaled up by 1 ether 
+  }
 }
+

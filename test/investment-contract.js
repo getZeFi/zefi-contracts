@@ -1,26 +1,26 @@
 const StandardTokenMock = artifacts.require('Test/StandardTokenMock.sol');
 const CDaiMock = artifacts.require('Test/CDaiMock.sol');
-const InvestmentContract = artifacts.require('Investment/InvestmentContractV1.sol');
+const YDaiMock = artifacts.require('Test/YDaiMock.sol');
+const InvestmentContractV1 = artifacts.require('Investment/InvestmentContractV1.sol');
+const InvestmentContractV2 = artifacts.require('Investment/InvestmentContractV2.sol');
 
-contract('InvestmentContract', accounts => {
-  let dai, cDai, investmentContract, zefiLib;
+contract('InvestmentContracts', accounts => {
+  let dai, target, investmentContract, zefiLib;
   const [admin, zefiWalletAddress, walletAddress,] = accounts; 
   const initialDaiBalance = web3.utils.toBN(web3.utils.toWei('10')); 
-  
-  beforeEach(async () => {
+
+  const setupContracts = async (InvestmentContract, TargetMock) => {
     dai = await StandardTokenMock.new(admin, web3.utils.toWei('100'));
-    cDai = await CDaiMock.new(dai.address); 
+    target = await TargetMock.new(dai.address); 
     investmentContract = await InvestmentContract.new(
       [dai.address], 
-      [cDai.address], 
+      [target.address], 
       zefiWalletAddress
     );
-
-    await dai.transfer(cDai.address, initialDaiBalance); 
     await dai.transfer(walletAddress, initialDaiBalance); 
-  });
+  };
 
-  it('should deposit and withdraw tokens from cDai', async () => {
+  const runDepositWithdrawTest = async () => {
     const interest = initialDaiBalance.div(web3.utils.toBN(10));
     const fee = interest.div(web3.utils.toBN(10)); //10pct is deducted from interest
     let balance;
@@ -29,12 +29,14 @@ contract('InvestmentContract', accounts => {
     await investmentContract.depositAll({from: walletAddress});
     daiBalances = await Promise.all([
       dai.balanceOf(walletAddress),
-      dai.balanceOf(cDai.address),
+      dai.balanceOf(target.address),
       dai.balanceOf(investmentContract.address)
     ]);
     assert(daiBalances[0].isZero());
-    assert(daiBalances[1].eq(initialDaiBalance.add(initialDaiBalance)));
+    assert(daiBalances[1].eq(initialDaiBalance));
     assert(daiBalances[2].isZero());
+
+    await dai.transfer(target.address, interest);
 
     await investmentContract.withdrawAll({from: walletAddress});
     daiBalances = await Promise.all([
@@ -45,5 +47,31 @@ contract('InvestmentContract', accounts => {
     assert(daiBalances[0].eq(initialDaiBalance.add(interest).sub(fee)));
     assert(daiBalances[1].isZero());
     assert(daiBalances[2].eq(fee));
+  };
+
+  context('InvestmentContractV1', () => {
+    beforeEach(async () => {
+      await setupContracts(
+        InvestmentContractV1,
+        CDaiMock
+      );
+    });
+
+    it('Deposit, withdraw sequence', async () => {
+      await runDepositWithdrawTest();
+    });
+  });
+
+  context('InvestmentContractV2', () => {
+    beforeEach(async () => {
+      await setupContracts(
+        InvestmentContractV2,
+        YDaiMock
+      );
+    });
+
+    it('Deposit, withdraw sequence', async () => {
+      await runDepositWithdrawTest();
+    });
   });
 });
