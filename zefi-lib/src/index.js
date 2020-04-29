@@ -32,12 +32,13 @@ const init = web3 => {
    * Creates new wallet, using WalletFactory
    * returns address of new wallet
    */
+  // API(recipient_address) -> 
    const createWallet = async ({
-     from,
-     recoveryAddress, 
-     authorizedAddress, 
-     cosignerAddress,
-     walletFactoryAddress
+     from, // recipient
+     recoveryAddress, // zefi admin 
+     authorizedAddress, // recipient fortmatic.
+     cosignerAddress, // recipient
+     walletFactoryAddress // walletfactory.json
    }) => { 
      const walletFactory = new web3.eth.Contract(
        WalletFactoryConf.abi, 
