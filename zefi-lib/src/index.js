@@ -107,15 +107,19 @@ const init = web3 => {
     return await utils.sendTx({web3, tx, from});
   }
 
-  const buildCreate2AddressForWallet = (creatorAddress, saltHex, byteCode) => {
+  const buildCreate2AddressForWallet = (creatorAddress, saltHex) => {
     saltHex = saltHex || utils.createSalt();
     const bytecode = `0x3d602d80600a3d3981f3363d3d373d3d3d363d73${creatorAddress.replace('0x', '')}5af43d82803e903d91602b57fd5bf3`;
-    return buildCreate2Address(creatorAddress, saltHex, bytecode); 
+    return {
+      address: utils.buildCreate2Address(creatorAddress, saltHex, bytecode), 
+      salt: saltHex
+    };
   };
 
   return {
     createWalletFactory,
     createWallet,
+    createWallet2,
     sendEther,
     sendERC20Token,
     buildCreate2AddressForWallet

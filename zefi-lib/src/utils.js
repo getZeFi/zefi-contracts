@@ -31,11 +31,11 @@ const createSalt = () => {
 }
 
 const buildCreate2Address = (creatorAddress, saltHex, byteCode) => {
-  return `0x${Web3Utils.utils.sha3(`0x${[
+  return `0x${Web3Utils.sha3(`0x${[
     'ff',
     creatorAddress,
     saltHex,
-    web3.utils.sha3(byteCode)
+    Web3Utils.sha3(byteCode)
   ].map(x => x.replace(/0x/, ''))
   .join('')}`).slice(-40)}`.toLowerCase()
 };
