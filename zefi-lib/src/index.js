@@ -53,6 +53,29 @@ const init = web3 => {
      return receipt.events.WalletCreated.returnValues.wallet;
    }
 
+   const createWallet2 = async ({
+     from, // recipient
+     recoveryAddress, // zefi admin 
+     authorizedAddress, // recipient fortmatic.
+     cosignerAddress, // recipient
+     walletFactoryAddress, // walletfactory.json
+     salt
+   }) => { 
+     const walletFactory = new web3.eth.Contract(
+       WalletFactoryConf.abi, 
+       walletFactoryAddress
+     );
+
+     const tx = await walletFactory.methods.deployCloneWallet2(
+       recoveryAddress,
+       authorizedAddress,
+       cosignerAddress,
+       salt
+     );
+     const receipt = await utils.sendTx({web3, tx, from});
+     return receipt.events.WalletCreated.returnValues.wallet;
+  };
+
   /**
    * send Ether from a wallet
    */
@@ -84,11 +107,22 @@ const init = web3 => {
     return await utils.sendTx({web3, tx, from});
   }
 
+  const buildCreate2AddressForWallet = (creatorAddress, saltHex) => {
+    saltHex = saltHex || utils.createSalt();
+    const bytecode = `0x3d602d80600a3d3981f3363d3d373d3d3d363d73${creatorAddress.replace('0x', '')}5af43d82803e903d91602b57fd5bf3`;
+    return {
+      address: utils.buildCreate2Address(creatorAddress, saltHex, bytecode), 
+      salt: saltHex
+    };
+  };
+
   return {
     createWalletFactory,
     createWallet,
+    createWallet2,
     sendEther,
-    sendERC20Token
+    sendERC20Token,
+    buildCreate2AddressForWallet
   };
 }
 
