@@ -29,5 +29,8 @@
   "bugs": {
     "url": "https://github.com/getZeFi/zefi-contracts/issues"
   },
-  "homepage": "https://github.com/getZeFi/zefi-contracts"
+  "homepage": "https://github.com/getZeFi/zefi-contracts",
+  "devDependencies": {
+    "@openzeppelin/test-helpers": "^0.5.5"
+  }
 }
