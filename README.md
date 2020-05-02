@@ -1,4 +1,4 @@
-# Zefi contracts
+# ZeFi Smart Contracts
 
 Smart contracts and client libraries for ZeFi
 
