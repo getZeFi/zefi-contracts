@@ -21,6 +21,13 @@ module.exports = {
       },
       network_id: 4
       //gas: 4000000      //make sure this gas allocation isn't over 4M, which is the max
+    },
+    kovan: {
+      provider: function() {
+        return new HDWalletProvider(MNEMONIC, "https://kovan.infura.io/v3/741ef88b1e1d4a4d97268a379983c9f9", 0, 10)
+      },
+      network_id: 42
+      //gas: 4000000      //make sure this gas allocation isn't over 4M, which is the max
     }
   },
   compilers: {
