@@ -72,4 +72,23 @@ contract Escrow {
     }
     payment.sent = true;
   }
+
+  // *************** Internal Functions ********************* //
+
+ /**
+  * @dev Concatenate two bytes32 into one bytes of size 64.
+  * @param b1 First bytes32 value
+  * @param b2 second bytes32 value
+  * @return A concatenated value of b1 and b2 of size 64
+ */
+ function concat(bytes32 b1, bytes32 b2) internal returns (bytes memory)
+ {
+     bytes memory result = new bytes(64);
+     assembly {
+         mstore(add(result, 32), b1)
+         mstore(add(result, 64), b2)
+     }
+     return result;
+ }
+
 }
