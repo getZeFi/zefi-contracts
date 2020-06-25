@@ -60,8 +60,10 @@ contract Escrow {
   }
 
   function sendPayment(bytes32 _paymentToken, address payable _to) external {
+    bytes32 msgSender = keccak256(abi.encodePacked(msg.sender));
     bytes32 paymentTokenHash = keccak256(abi.encodePacked(_paymentToken));
-    Payment storage payment = payments[paymentTokenHash];
+    bytes memory paymentTokenHashWithSender = concat(msgSender, paymentTokenHash);
+    Payment storage payment = payments[paymentTokenHashWithSender];
     require(payment.value != 0, 'wrong _paymentToken'); 
     require(payment.sent == false, 'payment already sent'); 
 
