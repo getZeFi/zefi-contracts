@@ -9,6 +9,14 @@ const createHash = v => {
   });
 }
 
+const createHashWithSender = (v, s) => {
+  return web3.utils.soliditySha3({
+    t: 'bytes32',
+    v,
+    s
+  });
+}
+
 contract('Escrow', (accounts) => {
   let escrow, token;
 
@@ -21,6 +29,18 @@ contract('Escrow', (accounts) => {
       paymentToken: web3.utils.randomHex(32) 
     };
     const paymentTokenHash = createHash(paymentParams.paymentToken); 
+    return { ...paymentParams, paymentTokenHash };
+  };
+
+  const createTokenPaymentParams = () => {
+    const paymentParams = {
+      from: accounts[0], 
+      to: accounts[1], 
+      value: web3.utils.toWei('1'),
+      tokenAddress: token.address,
+      paymentToken: web3.utils.randomHex(32) 
+    };
+    const paymentTokenHash = createHashWithSender(paymentParams.paymentToken, paymentParams.from); 
     return { ...paymentParams, paymentTokenHash };
   };
 
@@ -61,8 +81,7 @@ contract('Escrow', (accounts) => {
   });
 
   it('should send token if paymentToken is correct', async () => {
-    const paymentParams = createPaymentParams();
-
+    const paymentParams = createTokenPaymentParams();
     await token.approve(escrow.address, paymentParams.value);
     await escrow.createTokenPayment(
       paymentParams.paymentTokenHash,
@@ -81,9 +100,9 @@ contract('Escrow', (accounts) => {
     assert(payment.sent === true);
     assert(balance.toString() === paymentParams.value);
   });
-
+  
   it('should NOT send token if paymentToken is incorrect or already sent', async () => {
-    const paymentParams = createPaymentParams();
+    const paymentParams = createTokenPaymentParams();
     const wrongPaymentToken = web3.utils.randomHex(32); 
 
     await token.approve(escrow.address, paymentParams.value);
