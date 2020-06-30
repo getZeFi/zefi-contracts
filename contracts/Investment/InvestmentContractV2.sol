@@ -71,11 +71,11 @@ contract InvestmentContractV2 is InvestmentContractBase, IInvestmentContract {
     //1. withdraw token from yToken
     uint yTokenBalance = target.yToken.balanceOf(address(this));
     uint price = target.yToken.getPricePerFullShare();
-    uint tokenEarnedBalance = yTokenBalance.mul(price).div(1 ether);
+    uint tokenEarnedBalance = yTokenBalance.div(1 ether).mul(price);
     uint amount = tokenEarnedBalance
       .mul(tokenInvested[tokenAddress][msg.sender])
       .div(target.totalTokenInvested);
-    target.yToken.withdraw(amount.mul(1 ether).div(price));
+    target.yToken.withdraw(amount.div(price).mul(1 ether));
 
     //2. transfer fee
     uint fee = calculateFee(tokenAddress, amount);
