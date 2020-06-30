@@ -46,13 +46,13 @@ contract InvestmentContractV2 is InvestmentContractBase, IInvestmentContract {
     uint amount = target.token.balanceOf(msg.sender);
     if(amount == 0) return;
 
-    //2. send token to this contract
-    target.token.transferFrom(msg.sender, address(this), amount);
-
     //3. update how much token was invested
     address tokenAddress = address(target.token);
     tokenInvested[tokenAddress][msg.sender] = tokenInvested[tokenAddress][msg.sender].add(amount);
     target.totalTokenInvested = target.totalTokenInvested.add(amount);
+
+    //2. send token to this contract
+    target.token.transferFrom(msg.sender, address(this), amount);
 
     //4. Approve token to be sent to yToken
     target.token.approve(address(target.yToken), amount);

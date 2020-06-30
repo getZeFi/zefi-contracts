@@ -58,13 +58,13 @@ contract InvestmentContractV1 is InvestmentContractBase, IInvestmentContract {
     uint amount = target.token.balanceOf(msg.sender);
     if(amount == 0) return;
 
-    //2. send token to this contract
-    target.token.transferFrom(msg.sender, address(this), amount);
-
-    //3. update how much token was invested
+    //2. update how much token was invested
     address tokenAddress = address(target.token);
     tokenInvested[tokenAddress][msg.sender] = tokenInvested[tokenAddress][msg.sender].add(amount);
     target.totalTokenInvested = target.totalTokenInvested.add(amount);
+
+    //3. send token to this contract
+    target.token.transferFrom(msg.sender, address(this), amount);
 
     //4. Approve token to be sent to compound
     target.token.approve(address(target.cToken), amount);
@@ -91,13 +91,13 @@ contract InvestmentContractV1 is InvestmentContractBase, IInvestmentContract {
     uint fee = calculateFee(tokenAddress, amount);
     target.token.transfer(zefiWallet, fee); 
 
-    //3. transfer token to caller 
-    target.token.transfer(msg.sender, amount.sub(fee));
-   
-    //4. update internal token balance
+    //3. update internal token balance
     target.totalTokenInvested = target.totalTokenInvested
       .sub(tokenInvested[tokenAddress][msg.sender]);
     tokenInvested[tokenAddress][msg.sender] = 0;
+
+    //4. transfer token to caller 
+    target.token.transfer(msg.sender, amount.sub(fee));
   }
 
   function getTokenAddresses() external view returns(address[] memory) {
