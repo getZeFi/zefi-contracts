@@ -31,6 +31,9 @@ contract InvestmentContractV1 is InvestmentContractBase, IInvestmentContract {
   }
   Target[] public targets;
 
+  event TokenTransactionExecuted(address indexed sender, bool indexed success);
+  event TokenApprovalExecuted(address indexed sender, bool indexed success);
+
   constructor(
     address[] memory _tokens, 
     address[] memory _cTokens, 
@@ -66,11 +69,11 @@ contract InvestmentContractV1 is InvestmentContractBase, IInvestmentContract {
     target.totalTokenInvested = target.totalTokenInvested.add(amount);
 
     //3. send token to this contract
-    target.token.transferFrom(msg.sender, address(this), amount);
-
+    bool success = target.token.transferFrom(msg.sender, address(this), amount);
+    emit TokenTransactionExecuted(msg.sender, success);
     //4. Approve token to be sent to compound
-    target.token.approve(address(target.cToken), amount);
-
+    success = target.token.approve(address(target.cToken), amount);
+    emit TokenApprovalExecuted(msg.sender, success);
     //5. send token to cToken
     assert(target.cToken.mint(amount) == 0);
   }
@@ -91,7 +94,8 @@ contract InvestmentContractV1 is InvestmentContractBase, IInvestmentContract {
 
     //2. transfer fee
     uint fee = calculateFee(tokenAddress, amount);
-    target.token.transfer(zefiWallet, fee); 
+    bool success = target.token.transfer(zefiWallet, fee); 
+    emit TokenTransactionExecuted(msg.sender, success);
 
     //3. update internal token balance
     target.totalTokenInvested = target.totalTokenInvested
@@ -99,7 +103,8 @@ contract InvestmentContractV1 is InvestmentContractBase, IInvestmentContract {
     tokenInvested[tokenAddress][msg.sender] = 0;
 
     //4. transfer token to caller 
-    target.token.transfer(msg.sender, amount.sub(fee));
+    success = target.token.transfer(msg.sender, amount.sub(fee));
+    emit TokenTransactionExecuted(msg.sender, success);
   }
 
   function getTokenAddresses() external view returns(address[] memory) {
