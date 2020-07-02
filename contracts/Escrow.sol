@@ -12,6 +12,8 @@ contract Escrow {
   //payment tokens to Payment
   mapping(bytes32 => Payment) public payments; 
 
+  event IERC20TransactionExecuted(address indexed sender, bool indexed success);
+
   function createEthPayment(
     bytes32 _paymentTokenHash 
   ) 
@@ -34,7 +36,8 @@ contract Escrow {
     external 
     payable 
   {
-    IERC20(_tokenAddress).transferFrom(msg.sender, address(this), _value); 
+    bool success = IERC20(_tokenAddress).transferFrom(msg.sender, address(this), _value); 
+    emit IERC20TransactionExecuted(msg.sender, success);
     _createPayment(
       _paymentTokenHash,
       msg.sender,
@@ -68,7 +71,8 @@ contract Escrow {
     if(payment.token == address(0)) {
       _to.transfer(payment.value);
     } else {
-      IERC20(payment.token).transfer(_to, payment.value);
+      bool success =IERC20(payment.token).transfer(_to, payment.value);
+      emit IERC20TransactionExecuted(msg.sender, success);
     }
     payment.sent = true;
   }
