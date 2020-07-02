@@ -19,6 +19,9 @@ contract InvestmentContractV2 is InvestmentContractBase, IInvestmentContract {
   }
   Target[] public targets;
 
+  event TokenTransactionExecuted(address indexed sender, bool indexed success);
+  event TokenApprovalExecuted(address indexed sender, bool indexed success);
+
   constructor(
     address[] memory _tokens, 
     address[] memory _yTokens, 
@@ -52,10 +55,12 @@ contract InvestmentContractV2 is InvestmentContractBase, IInvestmentContract {
     target.totalTokenInvested = target.totalTokenInvested.add(amount);
 
     //2. send token to this contract
-    target.token.transferFrom(msg.sender, address(this), amount);
+    bool success = target.token.transferFrom(msg.sender, address(this), amount);
+    emit TokenTransactionExecuted(msg.sender, success);
 
     //4. Approve token to be sent to yToken
-    target.token.approve(address(target.yToken), amount);
+    success = target.token.approve(address(target.yToken), amount);
+    emit TokenApprovalExecuted(msg.sender, success);
 
     //5. send token to yToken
     target.yToken.deposit(amount);
@@ -79,11 +84,13 @@ contract InvestmentContractV2 is InvestmentContractBase, IInvestmentContract {
 
     //2. transfer fee
     uint fee = calculateFee(tokenAddress, amount);
-    target.token.transfer(zefiWallet, fee); 
+    bool success = target.token.transfer(zefiWallet, fee); 
+    emit TokenTransactionExecuted(msg.sender, success);
 
     //3. transfer token to caller 
-    target.token.transfer(msg.sender, amount.sub(fee));
+    success = target.token.transfer(msg.sender, amount.sub(fee));
     //target.token.transfer(msg.sender, amount.mul(1 ether).div(price).sub(fee));
+    emit TokenTransactionExecuted(msg.sender, success);
    
     //4. update internal token balance
     target.totalTokenInvested = target.totalTokenInvested
