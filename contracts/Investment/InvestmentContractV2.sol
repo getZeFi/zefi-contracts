@@ -26,6 +26,8 @@ contract InvestmentContractV2 is InvestmentContractBase, IInvestmentContract {
   ) public {
     require(_tokens.length == _yTokens.length, 'tokens and yTokens must have same length');
     for(uint i = 0; i < _tokens.length; i++) {
+      require(_tokens[i] != address(0x0), "Escrow: Invalid Address");
+      require(_yTokens[i] != address(0x0), "Escrow: Invalid Address");
       targets.push(Target(
         IERC20(_tokens[i]),
         IYToken(_yTokens[i]),
@@ -105,6 +107,7 @@ contract InvestmentContractV2 is InvestmentContractBase, IInvestmentContract {
   }
 
   function balanceOf(address owner) external view returns(uint[] memory) {
+    require(owner != address(0x0), "Escrow: Invalid Address");
     uint[] memory balances = new uint[](targets.length);
     for(uint i = 0; i < targets.length; i++) {
       balances[i] = _balanceOf(targets[i], owner);

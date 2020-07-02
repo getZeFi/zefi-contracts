@@ -34,6 +34,7 @@ contract Escrow {
     external 
     payable 
   {
+    require(_tokenAddress != address(0x0), "Escrow: Invalid Address");
     IERC20(_tokenAddress).transferFrom(msg.sender, address(this), _value); 
     _createPayment(
       _paymentTokenHash,
@@ -60,6 +61,7 @@ contract Escrow {
   }
 
   function sendPayment(bytes32 _paymentToken, address payable _to) external {
+    require(_to != address(0x0), "Escrow: Invalid Address");
     bytes32 paymentTokenHash = keccak256(abi.encodePacked(_paymentToken));
     Payment storage payment = payments[paymentTokenHash];
     require(payment.value != 0, 'wrong _paymentToken'); 
