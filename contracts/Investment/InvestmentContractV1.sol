@@ -41,6 +41,8 @@ contract InvestmentContractV1 is InvestmentContractBase, IInvestmentContract {
   ) public {
     require(_tokens.length == _cTokens.length, 'tokens and cTokens must have same length');
     for(uint i = 0; i < _tokens.length; i++) {
+      require(_tokens[i] != address(0x0), "Escrow: Invalid Address");
+      require(_cTokens[i] != address(0x0), "Escrow: Invalid Address");
       targets.push(Target(
         IERC20(_tokens[i]),
         ICToken(_cTokens[i]),
