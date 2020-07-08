@@ -27,6 +27,7 @@ contract InvestmentContractV2 is InvestmentContractBase, IInvestmentContract {
     address[] memory _yTokens, 
     address _zefiWallet
   ) public {
+    require(_tokens.length <= 15, 'Upperbound of tokens length should be 15');
     require(_tokens.length == _yTokens.length, 'tokens and yTokens must have same length');
     for(uint i = 0; i < _tokens.length; i++) {
       require(_tokens[i] != address(0x0), "Escrow: Invalid Address");
