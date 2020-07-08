@@ -34,7 +34,6 @@ contract Escrow {
     address _tokenAddress
   ) 
     external 
-    payable 
   {
     require(_tokenAddress != address(0x0), "Escrow: Invalid Address");
     bool success = IERC20(_tokenAddress).transferFrom(msg.sender, address(this), _value); 
