@@ -1,4 +1,4 @@
-pragma solidity ^0.5.10;
+pragma solidity 0.5.10;
 
 import './InvestmentContractBase.sol';
 import './IInvestmentContract.sol';

@@ -1,4 +1,4 @@
-pragma solidity ^0.5.10;
+pragma solidity 0.5.10;
 
 // apparently events are not '.selector'able
 import "../Wallet/FullWallet.sol";

@@ -1,5 +1,5 @@
 //based on https://github.com/iearn-finance/itoken/blob/master/contracts/YDAIv3.sol
-pragma solidity ^0.5.10;
+pragma solidity 0.5.10;
 pragma experimental ABIEncoderV2;
 
 //import 'openzeppelin-solidity/contracts/token/ERC20/IERC20.sol';
