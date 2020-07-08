@@ -1,4 +1,4 @@
-pragma solidity ^0.5.10;
+pragma solidity 0.5.10;
 
 import "../Wallet/CloneableWallet.sol";
 import "../Ownership/HasNoEther.sol";

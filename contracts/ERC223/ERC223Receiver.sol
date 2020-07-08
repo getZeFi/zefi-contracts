@@ -1,4 +1,4 @@
-pragma solidity ^0.5.10;
+pragma solidity 0.5.10;
 
 
 /// @title ERC223Receiver ensures we are ERC223 compatible

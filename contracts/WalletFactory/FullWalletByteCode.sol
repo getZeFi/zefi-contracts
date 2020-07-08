@@ -1,4 +1,4 @@
-pragma solidity ^0.5.10;
+pragma solidity 0.5.10;
 
 /// @title FullWalletByteCode
 /// @dev A contract containing the FullWallet bytecode, for use in deployment.

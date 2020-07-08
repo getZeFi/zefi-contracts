@@ -1,4 +1,4 @@
-pragma solidity ^0.5.10;
+pragma solidity 0.5.10;
 
 import "../ERC721/ERC721Receivable.sol";
 import "../ERC223/ERC223Receiver.sol";

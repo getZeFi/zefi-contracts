@@ -1,4 +1,4 @@
-pragma solidity ^0.5.10;
+pragma solidity 0.5.10;
 
 /// @notice this throws on its default (and only) payable function
 contract ThrowOnPayable {

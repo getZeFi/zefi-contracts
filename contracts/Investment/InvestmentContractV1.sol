@@ -1,5 +1,5 @@
-pragma solidity ^0.5.10;
-pragma experimental ABIEncoderV2;
+pragma solidity 0.5.10;
+//pragma experimental ABIEncoderV2;
 
 //import 'openzeppelin-solidity/contracts/token/ERC20/IERC20.sol';
 //import 'openzeppelin-solidity/contracts/math/SafeMath.sol';
@@ -39,6 +39,7 @@ contract InvestmentContractV1 is InvestmentContractBase, IInvestmentContract {
     address[] memory _cTokens, 
     address _zefiWallet
   ) public {
+    require(_tokens.length <= 15, 'Upperbound of tokens length should be 15');
     require(_tokens.length == _cTokens.length, 'tokens and cTokens must have same length');
     for(uint i = 0; i < _tokens.length; i++) {
       require(_tokens[i] != address(0x0), "Escrow: Invalid Address");
