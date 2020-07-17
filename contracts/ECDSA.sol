@@ -1,4 +1,4 @@
-pragma solidity ^0.5.10;
+pragma solidity ^0.5.7;
 
 
 /// @title ECDSA is a library that contains useful methods for working with ECDSA signatures
@@ -19,7 +19,6 @@ library ECDSA {
              s := mload(add(dataPointer, 0x40))
              v := byte(0, mload(add(dataPointer, 0x60)))
         }
-    
         return (r, s, v);
     }
 }

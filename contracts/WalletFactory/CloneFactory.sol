@@ -1,4 +1,4 @@
-pragma solidity ^0.5.10;
+pragma solidity ^0.5.7;
 
 
 /// @title CloneFactory - a contract that creates clones

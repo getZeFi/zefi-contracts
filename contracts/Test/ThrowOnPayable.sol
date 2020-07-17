@@ -1,4 +1,4 @@
-pragma solidity ^0.5.10;
+pragma solidity ^0.5.7;
 
 /// @notice this throws on its default (and only) payable function
 contract ThrowOnPayable {
@@ -10,7 +10,6 @@ contract ThrowOnPayable {
 
         // 1. just revert
         revert("revert");
-        
         // 2.a. infinite loop
         /* `i` will have max a max value of 255 (initialized as uint8),
         * causing an infinite loop.

@@ -1,6 +1,6 @@
-pragma solidity ^0.5.10;
+pragma solidity ^0.5.7;
 
-import 'openzeppelin-solidity/contracts/token/ERC20/IERC20.sol';
+import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 
 contract CDaiMock {
   IERC20 dai;
@@ -14,18 +14,18 @@ contract CDaiMock {
   function mint(uint amount) external returns(uint) {
     dai.transferFrom(msg.sender, address(this), amount);
     uint cDaiAmount = amount * 1 ether / _getSharePrice();
-    balances[msg.sender] += cDaiAmount; 
-    totalBalance += cDaiAmount; 
+    balances[msg.sender] += cDaiAmount;
+    totalBalance += cDaiAmount;
     return 0;
   }
 
   function redeemUnderlying(uint amount) external {
-    uint totalAmount = balanceOfUnderlying(msg.sender); 
-    require(totalAmount >= amount);
+    uint totalAmount = balanceOfUnderlying(msg.sender);
+    require(totalAmount >= amount, "Total amount should be greater than amount");
     uint cDaiAmount = amount * 1 ether / _getSharePrice();
     dai.transfer(msg.sender, amount);
-    balances[msg.sender] -= cDaiAmount; 
-    totalBalance -= cDaiAmount; 
+    balances[msg.sender] -= cDaiAmount;
+    totalBalance -= cDaiAmount;
   }
 
   function balanceOf(address owner) external view returns(uint) {
@@ -33,7 +33,7 @@ contract CDaiMock {
   }
 
   function balanceOfUnderlying(address owner) public view returns(uint) {
-    return _getSharePrice() * balances[owner] / 1 ether; 
+    return _getSharePrice() * balances[owner] / 1 ether;
   }
 
   function _getSharePrice() internal view returns(uint) {

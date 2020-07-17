@@ -1,4 +1,4 @@
-pragma solidity ^0.5.10;
+pragma solidity ^0.5.7;
 
 
 /// @title aid development, should not be released into final version
@@ -30,7 +30,7 @@ contract Debuggable {
     function logBytes1(string memory s, bytes1 x) internal {
         emit LogBytes1(s, x);
     }
-    
+
     function logUint32(string memory s, uint32 x) internal {
         emit LogUint32(s, x);
     }

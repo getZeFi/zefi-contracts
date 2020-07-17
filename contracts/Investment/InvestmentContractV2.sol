@@ -1,7 +1,7 @@
-pragma solidity ^0.5.10;
+pragma solidity ^0.5.7;
 
-import './InvestmentContractBase.sol';
-import './IInvestmentContract.sol';
+import "./InvestmentContractBase.sol";
+import "./IInvestmentContract.sol";
 
 contract IYToken {
   function deposit(uint256 _amount) external;
@@ -23,12 +23,12 @@ contract InvestmentContractV2 is InvestmentContractBase, IInvestmentContract {
   event TokenApprovalExecuted(address indexed sender, bool indexed success);
 
   constructor(
-    address[] memory _tokens, 
-    address[] memory _yTokens, 
+    address[] memory _tokens,
+    address[] memory _yTokens,
     address _zefiWallet
   ) public {
-    require(_tokens.length == _yTokens.length, 'tokens and yTokens must have same length');
-    for(uint i = 0; i < _tokens.length; i++) {
+    require(_tokens.length == _yTokens.length, "tokens and yTokens must have same length");
+    for (uint i = 0; i < _tokens.length; i++) {
       require(_tokens[i] != address(0x0), "Escrow: Invalid Address");
       require(_yTokens[i] != address(0x0), "Escrow: Invalid Address");
       targets.push(Target(
@@ -41,7 +41,7 @@ contract InvestmentContractV2 is InvestmentContractBase, IInvestmentContract {
   }
 
   function depositAll() external {
-    for(uint i = 0; i < targets.length; i++) {
+    for (uint i = 0; i < targets.length; i++) {
       _depositAll(targets[i]);
     }
   }
@@ -49,7 +49,8 @@ contract InvestmentContractV2 is InvestmentContractBase, IInvestmentContract {
   function _depositAll(Target storage target) internal {
     //1. get token balance of caller
     uint amount = target.token.balanceOf(msg.sender);
-    if(amount == 0) return;
+    if (amount == 0)
+      return;
 
     //3. update how much token was invested
     address tokenAddress = address(target.token);
@@ -69,7 +70,7 @@ contract InvestmentContractV2 is InvestmentContractBase, IInvestmentContract {
   }
 
   function withdrawAll() external {
-    for(uint i = 0; i < targets.length; i++) {
+    for (uint i = 0; i < targets.length; i++) {
       _withdrawAll(targets[i]);
     }
   }
@@ -86,14 +87,13 @@ contract InvestmentContractV2 is InvestmentContractBase, IInvestmentContract {
 
     //2. transfer fee
     uint fee = calculateFee(tokenAddress, amount);
-    bool success = target.token.transfer(zefiWallet, fee); 
+    bool success = target.token.transfer(zefiWallet, fee);
     emit TokenTransactionExecuted(msg.sender, success);
 
-    //3. transfer token to caller 
+    //3. transfer token to caller
     success = target.token.transfer(msg.sender, amount.sub(fee));
     //target.token.transfer(msg.sender, amount.mul(1 ether).div(price).sub(fee));
     emit TokenTransactionExecuted(msg.sender, success);
-   
     //4. update internal token balance
     target.totalTokenInvested = target.totalTokenInvested
       .sub(tokenInvested[tokenAddress][msg.sender]);
@@ -102,7 +102,7 @@ contract InvestmentContractV2 is InvestmentContractBase, IInvestmentContract {
 
   function getTokenAddresses() external view returns(address[] memory) {
     address[] memory addresses = new address[](targets.length);
-    for(uint i = 0; i < targets.length; i++) {
+    for (uint i = 0; i < targets.length; i++) {
       addresses[i] = address(targets[i].token);
     }
     return addresses;
@@ -116,7 +116,7 @@ contract InvestmentContractV2 is InvestmentContractBase, IInvestmentContract {
   function balanceOf(address owner) external view returns(uint[] memory) {
     require(owner != address(0x0), "Escrow: Invalid Address");
     uint[] memory balances = new uint[](targets.length);
-    for(uint i = 0; i < targets.length; i++) {
+    for (uint i = 0; i < targets.length; i++) {
       balances[i] = _balanceOf(targets[i], owner);
     }
     return balances;
@@ -135,7 +135,7 @@ contract InvestmentContractV2 is InvestmentContractBase, IInvestmentContract {
   function _balanceOfUnderlying(IYToken yToken) internal view returns(uint) {
     uint pricePerShare = yToken.getPricePerFullShare();
     uint yTokenAmount = yToken.balanceOf(address(this));
-    return yTokenAmount.mul(pricePerShare).div(1 ether); //getPricePerFullShare() is scaled up by 1 ether 
+    return yTokenAmount.mul(pricePerShare).div(1 ether); //getPricePerFullShare() is scaled up by 1 ether
   }
 }
 

@@ -1,4 +1,4 @@
-pragma solidity ^0.5.10;
+pragma solidity ^0.5.7;
 
 // apparently events are not '.selector'able
 import "../Wallet/FullWallet.sol";
@@ -6,7 +6,6 @@ import "../Wallet/FullWallet.sol";
 contract Selector {
 
     // Events
-    
     function invocationSuccessSelector() public pure returns (bytes32) {
         return keccak256("InvocationSuccess(bytes32,uint256,uint256)");
     }

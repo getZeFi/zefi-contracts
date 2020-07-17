@@ -1,15 +1,15 @@
-pragma solidity ^0.5.10;
+pragma solidity ^0.5.7;
 
 
 /// @title ERC721ReceiverDraft
 /// @dev Interface for any contract that wants to support safeTransfers from
 ///  ERC721 asset contracts.
-/// @dev Note: this is the interface defined from 
+/// @dev Note: this is the interface defined from
 ///  https://github.com/ethereum/EIPs/commit/2bddd126def7c046e1e62408dc2b51bdd9e57f0f
-///  to https://github.com/ethereum/EIPs/commit/27788131d5975daacbab607076f2ee04624f9dbb 
+///  to https://github.com/ethereum/EIPs/commit/27788131d5975daacbab607076f2ee04624f9dbb
 ///  and is not the final interface.
 ///  Due to the extended period of time this revision was specified in the draft,
-///  we are supporting both this and the newer (final) interface in order to be 
+///  we are supporting both this and the newer (final) interface in order to be
 ///  compatible with any ERC721 implementations that may have used this interface.
 contract ERC721ReceiverDraft {
 
@@ -25,7 +25,7 @@ contract ERC721ReceiverDraft {
     ///  transfer. This function MUST use 50,000 gas or less. Return of other
     ///  than the magic value MUST result in the transaction being reverted.
     ///  Note: the contract address is always the message sender.
-    /// @param _from The sending address 
+    /// @param _from The sending address
     /// @param _tokenId The NFT identifier which is being transfered
     /// @param data Additional data with no specified format
     /// @return `bytes4(keccak256("onERC721Received(address,uint256,bytes)"))`
