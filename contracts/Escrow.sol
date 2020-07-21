@@ -1,6 +1,6 @@
-pragma solidity ^0.5.10;
+pragma solidity ^0.5.7;
 
-import 'openzeppelin-solidity/contracts/token/ERC20/IERC20.sol';
+import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 
 contract Escrow {
   struct Payment {
@@ -10,13 +10,13 @@ contract Escrow {
     bool sent;
   }
   //payment tokens to Payment
-  mapping(bytes32 => Payment) public payments; 
+  mapping(bytes32 => Payment) public payments;
 
   event IERC20TransactionExecuted(address indexed sender, bool indexed success);
 
   function createEthPayment(
-    bytes32 _paymentTokenHash 
-  ) 
+    bytes32 _paymentTokenHash
+  )
     external
     payable
   {
@@ -32,12 +32,12 @@ contract Escrow {
     bytes32 _paymentTokenHash,
     uint _value,
     address _tokenAddress
-  ) 
-    external 
-    payable 
+  )
+    external
+    payable
   {
     require(_tokenAddress != address(0x0), "Escrow: Invalid Address");
-    bool success = IERC20(_tokenAddress).transferFrom(msg.sender, address(this), _value); 
+    bool success = IERC20(_tokenAddress).transferFrom(msg.sender, address(this), _value);
     emit IERC20TransactionExecuted(msg.sender, success);
 
     _createPayment(
@@ -53,8 +53,8 @@ contract Escrow {
     address _from,
     uint _value,
     address _tokenAddress
-  ) 
-    internal 
+  )
+    internal
   {
     payments[_paymentTokenHash] = Payment(
       _from,
@@ -68,13 +68,13 @@ contract Escrow {
     require(_to != address(0x0), "Escrow: Invalid Address");
     bytes32 paymentTokenHash = keccak256(abi.encodePacked(_paymentToken));
     Payment storage payment = payments[paymentTokenHash];
-    require(payment.value != 0, 'wrong _paymentToken'); 
-    require(payment.sent == false, 'payment already sent'); 
+    require(payment.value != 0, "wrong _paymentToken");
+    require(payment.sent == false, "payment already sent");
 
-    if(payment.token == address(0)) {
+    if (payment.token == address(0)) {
       _to.transfer(payment.value);
     } else {
-      bool success =IERC20(payment.token).transfer(_to, payment.value);
+      bool success = IERC20(payment.token).transfer(_to, payment.value);
       emit IERC20TransactionExecuted(msg.sender, success);
     }
     payment.sent = true;

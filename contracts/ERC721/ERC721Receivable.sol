@@ -1,4 +1,4 @@
-pragma solidity ^0.5.10;
+pragma solidity ^0.5.7;
 
 import "./ERC721ReceiverDraft.sol";
 import "./ERC721ReceiverFinal.sol";
@@ -9,7 +9,7 @@ import "./ERC721ReceiverFinal.sol";
 /// @dev These functions are public, and could be called by anyone, even in the case
 ///  where no NFTs have been transferred. Since it's not a reliable source of
 ///  truth about ERC721 tokens being transferred, we save the gas and don't
-///  bother emitting a (potentially spurious) event as found in 
+///  bother emitting a (potentially spurious) event as found in
 ///  https://github.com/OpenZeppelin/openzeppelin-solidity/blob/5471fc808a17342d738853d7bf3e9e5ef3108074/contracts/mocks/ERC721ReceiverMock.sol
 contract ERC721Receivable is ERC721ReceiverDraft, ERC721ReceiverFinal {
 
@@ -19,7 +19,7 @@ contract ERC721Receivable is ERC721ReceiverDraft, ERC721ReceiverFinal {
     ///  transfer. This function MUST use 50,000 gas or less. Return of other
     ///  than the magic value MUST result in the transaction being reverted.
     ///  Note: the contract address is always the message sender.
-    /// @param _from The sending address 
+    /// @param _from The sending address
     /// @param _tokenId The NFT identifier which is being transfered
     /// @param data Additional data with no specified format
     /// @return `bytes4(keccak256("onERC721Received(address,uint256,bytes)"))`

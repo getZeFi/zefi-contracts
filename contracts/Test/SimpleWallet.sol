@@ -1,4 +1,4 @@
-pragma solidity ^0.5.10;
+pragma solidity ^0.5.7;
 
 //import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "../Ownership/Ownable.sol";
@@ -15,7 +15,7 @@ contract SimpleWallet is Ownable {
     /// @notice Gets called when a transaction is received without calling a method
     function() external payable {
         // length cannot be > 0 as we won't have enough gas
-        require(msg.data.length == 0);
+        require(msg.data.length == 0, "data should have info");
         // k + unindexedBytes * a + indexedTopics * b
         // k = 375, a = 8, b = 375
         // because we only index the first one, we should be under 2300 gas stipend

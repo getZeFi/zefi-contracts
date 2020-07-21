@@ -1,11 +1,11 @@
-pragma solidity ^0.5.10;
+pragma solidity ^0.5.7;
 pragma experimental ABIEncoderV2;
 
 //import 'openzeppelin-solidity/contracts/token/ERC20/IERC20.sol';
 //import 'openzeppelin-solidity/contracts/math/SafeMath.sol';
 
-import './InvestmentContractBase.sol';
-import './IInvestmentContract.sol';
+import "./InvestmentContractBase.sol";
+import "./IInvestmentContract.sol";
 
 interface CDai {
   function mint(uint amount) external returns(uint);
@@ -35,12 +35,12 @@ contract InvestmentContractV1 is InvestmentContractBase, IInvestmentContract {
   event TokenApprovalExecuted(address indexed sender, bool indexed success);
 
   constructor(
-    address[] memory _tokens, 
-    address[] memory _cTokens, 
+    address[] memory _tokens,
+    address[] memory _cTokens,
     address _zefiWallet
   ) public {
-    require(_tokens.length == _cTokens.length, 'tokens and cTokens must have same length');
-    for(uint i = 0; i < _tokens.length; i++) {
+    require(_tokens.length == _cTokens.length, "tokens and cTokens must have same length");
+    for (uint i = 0; i < _tokens.length; i++) {
       require(_tokens[i] != address(0x0), "Escrow: Invalid Address");
       require(_cTokens[i] != address(0x0), "Escrow: Invalid Address");
       targets.push(Target(
@@ -53,7 +53,7 @@ contract InvestmentContractV1 is InvestmentContractBase, IInvestmentContract {
   }
 
   function depositAll() external {
-    for(uint i = 0; i < targets.length; i++) {
+    for (uint i = 0; i < targets.length; i++) {
       _depositAll(targets[i]);
     }
   }
@@ -61,7 +61,8 @@ contract InvestmentContractV1 is InvestmentContractBase, IInvestmentContract {
   function _depositAll(Target storage target) internal {
     //1. get token balance of caller
     uint amount = target.token.balanceOf(msg.sender);
-    if(amount == 0) return;
+    if (amount == 0)
+      return;
 
     //2. update how much token was invested
     address tokenAddress = address(target.token);
@@ -79,7 +80,7 @@ contract InvestmentContractV1 is InvestmentContractBase, IInvestmentContract {
   }
 
   function withdrawAll() external {
-    for(uint i = 0; i < targets.length; i++) {
+    for (uint i = 0; i < targets.length; i++) {
       _withdrawAll(targets[i]);
     }
   }
@@ -94,7 +95,7 @@ contract InvestmentContractV1 is InvestmentContractBase, IInvestmentContract {
 
     //2. transfer fee
     uint fee = calculateFee(tokenAddress, amount);
-    bool success = target.token.transfer(zefiWallet, fee); 
+    bool success = target.token.transfer(zefiWallet, fee);
     emit TokenTransactionExecuted(msg.sender, success);
 
     //3. update internal token balance
@@ -102,14 +103,14 @@ contract InvestmentContractV1 is InvestmentContractBase, IInvestmentContract {
       .sub(tokenInvested[tokenAddress][msg.sender]);
     tokenInvested[tokenAddress][msg.sender] = 0;
 
-    //4. transfer token to caller 
+    //4. transfer token to caller
     success = target.token.transfer(msg.sender, amount.sub(fee));
     emit TokenTransactionExecuted(msg.sender, success);
   }
 
   function getTokenAddresses() external view returns(address[] memory) {
     address[] memory addresses = new address[](targets.length);
-    for(uint i = 0; i < targets.length; i++) {
+    for (uint i = 0; i < targets.length; i++) {
       addresses[i] = address(targets[i].token);
     }
     return addresses;
@@ -122,7 +123,7 @@ contract InvestmentContractV1 is InvestmentContractBase, IInvestmentContract {
 
   function balanceOf(address owner) external view returns(uint[] memory) {
     uint[] memory balances = new uint[](targets.length);
-    for(uint i = 0; i < targets.length; i++) {
+    for (uint i = 0; i < targets.length; i++) {
       balances[i] = _balanceOf(targets[i], owner);
     }
     return balances;

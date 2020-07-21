@@ -1,8 +1,8 @@
-pragma solidity ^0.5.10;
+pragma solidity ^0.5.7;
 
 
 /// @title ERC165Query example
-/// @notice see https://github.com/ethereum/EIPs/blob/master/EIPS/eip-165.md 
+/// @notice see https://github.com/ethereum/EIPs/blob/master/EIPS/eip-165.md
 contract ERC165Query {
     bytes4 public constant _INTERFACE_ID_INVALID = 0xffffffff;
     bytes4 public constant _INTERFACE_ID_ERC165 = 0x01ffc9a7;
@@ -10,7 +10,7 @@ contract ERC165Query {
     function doesContractImplementInterface(
         address _contract,
         bytes4 _interfaceId
-    ) 
+    )
         public
         view
         returns (bool)
@@ -44,7 +44,7 @@ contract ERC165Query {
         returns (
             uint256 success,
             uint256 result
-        ) 
+        )
     {
         bytes memory encodedParams = abi.encodeWithSelector(_INTERFACE_ID_ERC165, _interfaceId);
 

@@ -1,4 +1,4 @@
-pragma solidity ^0.5.10;
+pragma solidity ^0.5.7;
 
 contract ERC1271 {
 
@@ -12,9 +12,9 @@ contract ERC1271 {
     ///  MUST NOT modify state (using STATICCALL for solc < 0.5, view modifier for solc > 0.5)
     ///  MUST allow external calls
     function isValidSignature(
-        bytes32 hash, 
+        bytes32 hash,
         bytes calldata _signature)
         external
-        view 
+        view
         returns (bytes4);
 }

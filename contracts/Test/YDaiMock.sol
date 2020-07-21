@@ -1,5 +1,5 @@
 //based on https://github.com/iearn-finance/itoken/blob/master/contracts/YDAIv3.sol
-pragma solidity ^0.5.10;
+pragma solidity ^0.5.7;
 pragma experimental ABIEncoderV2;
 
 //import 'openzeppelin-solidity/contracts/token/ERC20/IERC20.sol';
@@ -264,8 +264,8 @@ library Address {
         require(address(this).balance >= amount, "Address: insufficient balance");
 
         // solhint-disable-next-line avoid-call-value
-        (bool success, ) = recipient.call.value(amount)("");
-        require(success, "Address: unable to send value, recipient may have reverted");
+        // (bool success, ) = recipient.call.value(amount)("");
+        // require(success, "Address: unable to send value, recipient may have reverted");
     }
 }
 
@@ -430,7 +430,7 @@ contract YDaiMock is ERC20, ERC20Detailed, ReentrancyGuard, Structs, Ownable {
   Lender public provider = Lender.NONE;
 
   constructor (address tokenAddress) public ERC20Detailed("iearn DAI", "yDAI", 18) {
-    token = tokenAddress; 
+    token = tokenAddress;
     apr = address(0xdD6d648C991f7d47454354f4Ef326b04025a48A8);
     dydx = address(0x1E0447b19BB6EcFdAe1e4AE1694b0C3659614e4e);
     aave = address(0x24a42fD28C976A61Df5D00D0599C34c4f90748c8);
@@ -602,7 +602,7 @@ contract YDaiMock is ERC20, ERC20Detailed, ReentrancyGuard, Structs, Ownable {
   }
 
   function _withdrawAll() internal {
-    return;
+    //return;
     uint256 amount = balanceCompound();
     if (amount > 0) {
       _withdrawSomeCompound(balanceCompoundInToken().sub(1));
@@ -648,15 +648,14 @@ contract YDaiMock is ERC20, ERC20Detailed, ReentrancyGuard, Structs, Ownable {
     _withdrawFulcrum(amount);
   }
 
-
   function _withdrawSome(uint256 _amount) internal returns (bool) {
-    uint256 origAmount = _amount;
+    //uint256 origAmount = _amount;
 
     uint256 amount = balanceCompound();
     if (amount > 0) {
       if (_amount > balanceCompoundInToken().sub(1)) {
         _withdrawSomeCompound(balanceCompoundInToken().sub(1));
-        _amount = origAmount.sub(IERC20(token).balanceOf(address(this)));
+        //_amount = origAmount.sub(IERC20(token).balanceOf(address(this)));
       } else {
         _withdrawSomeCompound(_amount);
         return true;
@@ -667,7 +666,7 @@ contract YDaiMock is ERC20, ERC20Detailed, ReentrancyGuard, Structs, Ownable {
     if (amount > 0) {
       if (_amount > balanceDydxAvailable()) {
         _withdrawDydx(balanceDydxAvailable());
-        _amount = origAmount.sub(IERC20(token).balanceOf(address(this)));
+        //_amount = origAmount.sub(IERC20(token).balanceOf(address(this)));
       } else {
         _withdrawDydx(_amount);
         return true;
@@ -675,27 +674,28 @@ contract YDaiMock is ERC20, ERC20Detailed, ReentrancyGuard, Structs, Ownable {
     }
 
     amount = balanceFulcrum();
-    if (amount > 0) {
-      if (_amount > balanceFulcrumAvailable().sub(1)) {
-        amount = balanceFulcrumAvailable().sub(1);
-        _withdrawSomeFulcrum(balanceFulcrumAvailable().sub(1));
-        _amount = origAmount.sub(IERC20(token).balanceOf(address(this)));
-      } else {
-        _withdrawSomeFulcrum(amount);
-        return true;
-      }
-    }
+    // if (amount > 0) {
+    //   if (_amount > balanceFulcrumAvailable().sub(1)) {
+    //     amount = balanceFulcrumAvailable().sub(1);
+    //     _withdrawSomeFulcrum(balanceFulcrumAvailable().sub(1));
+    //     _amount = origAmount.sub(IERC20(token).balanceOf(address(this)));
+    //   }
+    //   else {
+    //     _withdrawSomeFulcrum(amount);
+    //     return true;
+    //   }
+    // }
 
-    amount = balanceAave();
-    if (amount > 0) {
-      if (_amount > balanceAaveAvailable()) {
-        _withdrawAave(balanceAaveAvailable());
-        _amount = origAmount.sub(IERC20(token).balanceOf(address(this)));
-      } else {
-        _withdrawAave(_amount);
-        return true;
-      }
-    }
+    // amount = balanceAave();
+    // if (amount > 0) {
+    //   if (_amount > balanceAaveAvailable()) {
+    //     _withdrawAave(balanceAaveAvailable());
+    //     //_amount = origAmount.sub(IERC20(token).balanceOf(address(this)));
+    //   } else {
+    //     _withdrawAave(_amount);
+    //     return true;
+    //   }
+    // }
 
     return true;
   }

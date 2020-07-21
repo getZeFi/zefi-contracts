@@ -1,10 +1,10 @@
-pragma solidity ^0.5.10;
+pragma solidity ^0.5.7;
 
 import "./CoreWallet.sol";
 
 
 /// @title Cloneable Wallet
-/// @notice This contract represents a complete but non working wallet.  
+/// @notice This contract represents a complete but non working wallet.
 ///  It is meant to be deployed and serve as the contract that you clone
 ///  in an EIP 1167 clone setup.
 /// @dev See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1167.md

@@ -1,4 +1,4 @@
-pragma solidity ^0.5.10;
+pragma solidity ^0.5.7;
 
 
 /// @title Ownable is for contracts that can be owned.
@@ -13,7 +13,6 @@ contract Ownable {
     ///  as the owner.
     /// @param previousOwner The previous `owner` of this contract
     event OwnershipRenounced(address indexed previousOwner);
-    
     /// @dev Fired when the owner to changes ownership
     /// @param previousOwner The previous `owner`
     /// @param newOwner The new `owner`

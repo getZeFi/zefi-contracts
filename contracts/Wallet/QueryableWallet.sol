@@ -1,4 +1,4 @@
-pragma solidity ^0.5.10;
+pragma solidity ^0.5.7;
 
 import "./CoreWallet.sol";
 import "../ERC165/ERC165Query.sol";
@@ -8,7 +8,6 @@ import "../ERC165/ERC165Query.sol";
 /// @notice This contract represents an ERC165 queryable version of the full wallet
 /// @dev NOTE: This contract is for testing purposes only!!
 contract QueryableWallet is CoreWallet, ERC165Query {
-    
     /// @notice A regular constructor that can be used if you wish to deploy a standalone instance of this
     ///  smart contract wallet. Useful if you anticipate that the lifetime gas savings of being able to call
     ///  this contract directly will outweigh the cost of deploying a complete copy of this contract.

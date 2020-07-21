@@ -1,4 +1,4 @@
-pragma solidity ^0.5.10;
+pragma solidity ^0.5.7;
 
 import "../Wallet/CloneableWallet.sol";
 import "../Ownership/HasNoEther.sol";
@@ -7,7 +7,7 @@ import "./FullWalletByteCode.sol";
 
 
 /// @title WalletFactory
-/// @dev A contract for creating wallets. 
+/// @dev A contract for creating wallets.
 contract WalletFactory is FullWalletByteCode, HasNoEther, CloneFactory {
 
     /// @dev Pointer to a pre-deployed instance of the Wallet contract. This
@@ -42,7 +42,7 @@ contract WalletFactory is FullWalletByteCode, HasNoEther, CloneFactory {
         address _authorizedAddress,
         uint256 _cosigner
     )
-        public 
+        public
     {
         // create the clone
         address payable clone = createClone(cloneWalletAddress);
@@ -56,7 +56,7 @@ contract WalletFactory is FullWalletByteCode, HasNoEther, CloneFactory {
     /// @dev Reasonably cheap to run (~100K gas)
     /// @dev The clone does not require `onlyOwner` as we avoid front-running
     ///  attacks by hashing the salt combined with the call arguments and using
-    ///  that as the salt we provide to `create2`. Given this constraint, a 
+    ///  that as the salt we provide to `create2`. Given this constraint, a
     ///  front-runner would need to use the same `_recoveryAddress`, `_authorizedAddress`,
     ///  and `_cosigner` parameters as the original deployer, so the original deployer
     ///  would have control of the wallet even if the transaction was front-run.
@@ -91,7 +91,7 @@ contract WalletFactory is FullWalletByteCode, HasNoEther, CloneFactory {
         // init the clone
         CloneableWallet(clone).init(_authorizedAddress, _cosigner, _recoveryAddress);
         // emit event
-        emit WalletCreated(clone, _authorizedAddress, false);   
+        emit WalletCreated(clone, _authorizedAddress, false);
     }
 
     /// @notice Used to deploy a full wallet
@@ -104,7 +104,7 @@ contract WalletFactory is FullWalletByteCode, HasNoEther, CloneFactory {
         address _authorizedAddress,
         uint256 _cosigner
     )
-        public 
+        public
     {
         // Copy the bytecode of the full wallet to memory.
         bytes memory fullWallet = fullWalletBytecode;
@@ -122,13 +122,13 @@ contract WalletFactory is FullWalletByteCode, HasNoEther, CloneFactory {
             // create the contract
             full := create(0, startPtr, mload(fullWallet))
         }
-        
+
         // check address
         require(full != address(0), "wallet must have address");
 
         // check size
         uint256 size;
-        // note this takes an additional 700 gas, 
+        // note this takes an additional 700 gas,
         // which is a relatively small amount in this case
         assembly {
             size := extcodesize(full)
@@ -179,13 +179,13 @@ contract WalletFactory is FullWalletByteCode, HasNoEther, CloneFactory {
             // create the contract using create2
             full := create2(0, startPtr, mload(fullWallet), _salt)
         }
-        
+
         // check address
         require(full != address(0), "wallet must have address");
 
         // check size
         uint256 size;
-        // note this takes an additional 700 gas, 
+        // note this takes an additional 700 gas,
         // which is a relatively small amount in this case
         assembly {
             size := extcodesize(full)
@@ -197,7 +197,7 @@ contract WalletFactory is FullWalletByteCode, HasNoEther, CloneFactory {
     }
 
     function updateInvestmentContract(address _investmentContract) external {
-      require(admin == msg.sender, 'only admin');
+      require(admin == msg.sender, "only admin");
       investmentContract = _investmentContract;
     }
 }

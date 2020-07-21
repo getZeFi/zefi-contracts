@@ -1,11 +1,11 @@
-pragma solidity ^0.5.10;
+pragma solidity ^0.5.7;
 
 import "../ERC721/ERC721Receivable.sol";
 import "../ERC223/ERC223Receiver.sol";
 import "../ERC1271/ERC1271.sol";
 import "../ECDSA.sol";
 import "../Investment/IInvestmentContract.sol";
-import 'openzeppelin-solidity/contracts/token/ERC20/IERC20.sol';
+import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 
 interface IWalletFactory {
     function investmentContract() external view returns(address);
@@ -17,7 +17,7 @@ interface IWalletFactory {
 ///  the simplest possible multisig solution, a two-of-two signature scheme. It devolves nicely
 ///  to "one-of-one" (i.e. singlesig) by simply having the cosigner set to the same value as
 ///  the main signer.
-/// 
+///
 ///  Most "advanced" functionality (deadman's switch, multiday recovery flows, blacklisting, etc)
 ///  can be implemented externally to this smart contract, either as an additional smart contract
 ///  (which can be tracked as a signer without cosigner, or as a cosigner) or as an off-chain flow
@@ -38,7 +38,7 @@ contract CoreWallet is ERC721Receivable, ERC223Receiver, ERC1271 {
     /// @notice This is the version of the contract.
     string public constant VERSION = "1.1.0";
 
-    /// @notice This is a sentinel value used to determine when a delegate is set to expose 
+    /// @notice This is a sentinel value used to determine when a delegate is set to expose
     ///  support for an interface containing more than a single function. See `delegates` and
     ///  `setDelegate` for more information.
     address public constant COMPOSITE_PLACEHOLDER = address(1);
@@ -48,14 +48,14 @@ contract CoreWallet is ERC721Receivable, ERC223Receiver, ERC1271 {
     ///  by using the '+' operator (which is cheaper than a shift and a mask). See the
     ///  comment on the `authorizations` variable for how this is used.
     uint256 public constant AUTH_VERSION_INCREMENTOR = (1 << 160);
-    
+
     /// @notice The pre-shifted authVersion (to get the current authVersion as an integer,
     ///  shift this value right by 160 bits). Starts as `1 << 160` (`AUTH_VERSION_INCREMENTOR`)
     ///  See the comment on the `authorizations` variable for how this is used.
     uint256 public authVersion;
 
     /// @notice pointer to the WalletFactory contract. Used to get address of InvestmentContract
-    IWalletFactory walletFactory; 
+    IWalletFactory walletFactory;
 
     /// @notice A mapping containing all of the addresses that are currently authorized to manage
     ///  the assets owned by this wallet.
@@ -85,13 +85,13 @@ contract CoreWallet is ERC721Receivable, ERC223Receiver, ERC1271 {
     ///  implementation contracts. Keys are interface IDs and values are addresses of
     ///  contracts that are responsible for implementing the function corresponding to the
     ///  interface.
-    ///  
+    ///
     ///  Delegates are added (or removed) via the `setDelegate` method after the contract is
     ///  deployed, allowing support for new interfaces to be dynamically added after deployment.
-    ///  When a delegate is added, its interface ID is considered "supported" under EIP165. 
+    ///  When a delegate is added, its interface ID is considered "supported" under EIP165.
     ///
     ///  For cases where an interface composed of more than a single function must be
-    ///  supported, it is necessary to manually add the composite interface ID with 
+    ///  supported, it is necessary to manually add the composite interface ID with
     ///  `setDelegate(interfaceId, COMPOSITE_PLACEHOLDER)`. Interface IDs added with the
     ///  COMPOSITE_PLACEHOLDER address are ignored when called and are only used to specify
     ///  supported interfaces.
@@ -111,7 +111,6 @@ contract CoreWallet is ERC721Receivable, ERC223Receiver, ERC1271 {
     ///  code" for an clone contract. See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1167.md
     ///  for more information about clone contracts.
     bool public initialized;
-    
     /// @notice Used to decorate methods that can only be called directly by the recovery address.
     modifier onlyRecoveryAddress() {
         require(msg.sender == recoveryAddress, "sender must be recovery address");
@@ -125,7 +124,6 @@ contract CoreWallet is ERC721Receivable, ERC223Receiver, ERC1271 {
         initialized = true;
         _;
     }
-    
     /// @notice Used to decorate methods that can only be called indirectly via an `invoke()` method.
     ///  In practice, it means that those methods can only be called by a signer/cosigner
     ///  pair that is currently authorized. Theoretically, we could factor out the
@@ -140,11 +138,10 @@ contract CoreWallet is ERC721Receivable, ERC223Receiver, ERC1271 {
         require(msg.sender == address(this), "must be called from `invoke()`");
         _;
     }
-    
     /// @notice Emitted when an authorized address is added, removed, or modified. When an
     ///  authorized address is removed ("deauthorized"), cosigner will be address(0) in
     ///  this event.
-    ///  
+    ///
     ///  NOTE: When emergencyRecovery() is called, all existing addresses are deauthorized
     ///  WITHOUT Authorized(addr, 0) being emitted. If you are keeping an off-chain mirror of
     ///  authorized addresses, you must also watch for EmergencyRecovery events.
@@ -152,7 +149,6 @@ contract CoreWallet is ERC721Receivable, ERC223Receiver, ERC1271 {
     /// @param authorizedAddress the address to authorize or unauthorize
     /// @param cosigner the 2-of-2 signatory (optional).
     event Authorized(address authorizedAddress, uint256 cosigner);
-    
     /// @notice Emitted when an emergency recovery has been performed. If this event is fired,
     ///  ALL previously authorized addresses have been deauthorized and the only authorized
     ///  address is the authorizedAddress indicated in this event.
@@ -202,14 +198,12 @@ contract CoreWallet is ERC721Receivable, ERC223Receiver, ERC1271 {
         require(address(_cosigner) != _recoveryAddress, "Do not use the recovery address as a cosigner.");
         require(_authorizedAddress != address(0), "Authorized addresses must not be zero.");
         require(address(_cosigner) != address(0), "Initial cosigner must not be zero.");
-        
         recoveryAddress = _recoveryAddress;
         // set initial authorization value
         authVersion = AUTH_VERSION_INCREMENTOR;
         // add initial authorized address
         authorizations[authVersion + uint256(_authorizedAddress)] = _cosigner;
         walletFactory = IWalletFactory(msg.sender);
-        
         emit Authorized(_authorizedAddress, _cosigner);
     }
 
@@ -221,7 +215,7 @@ contract CoreWallet is ERC721Receivable, ERC223Receiver, ERC1271 {
     ///  A correct invocation of this method occurs in two cases:
     ///  - someone transfers ETH to this wallet (`msg.data.length` is  0)
     ///  - someone calls a delegated function (`msg.data.length` is greater than 0 and
-    ///    `delegates[msg.sig]` is set) 
+    ///    `delegates[msg.sig]` is set)
     ///  In all other cases, this function will revert.
     ///
     ///  NOTE: Some smart contracts send 0 eth as part of a more complex operation
@@ -233,11 +227,11 @@ contract CoreWallet is ERC721Receivable, ERC223Receiver, ERC1271 {
             emit Received(msg.sender, msg.value);
         }
         if (msg.data.length > 0) {
-            address delegate = delegates[msg.sig]; 
+            address delegate = delegates[msg.sig];
             require(delegate > COMPOSITE_PLACEHOLDER, "Invalid transaction");
 
             // We have found a delegate contract that is responsible for the method signature of
-            // this call. Now, pass along the calldata of this CALL to the delegate contract.  
+            // this call. Now, pass along the calldata of this CALL to the delegate contract.
             assembly {
                 calldatacopy(0, 0, calldatasize())
                 let result := staticcall(gas, delegate, 0, calldatasize(), 0, 0)
@@ -245,15 +239,15 @@ contract CoreWallet is ERC721Receivable, ERC223Receiver, ERC1271 {
 
                 // If the delegate reverts, we revert. If the delegate does not revert, we return the data
                 // returned by the delegate to the original caller.
-                switch result 
+                switch result
                 case 0 {
                     revert(0, returndatasize())
-                } 
+                }
                 default {
                     return(0, returndatasize())
                 }
-            } 
-        }    
+            }
+        }
     }
 
     /// @notice Adds or removes dynamic support for an interface. Can be used in 3 ways:
@@ -272,7 +266,7 @@ contract CoreWallet is ERC721Receivable, ERC223Receiver, ERC1271 {
         delegates[_interfaceId] = _delegate;
         emit DelegateUpdated(_interfaceId, _delegate);
     }
-    
+
     /// @notice Configures an authorizable address. Can be used in four ways:
     ///   - Add a new signer/cosigner pair (cosigner must be non-zero)
     ///   - Set or change the cosigner for an existing signer (if authorizedAddress != cosigner)
@@ -286,19 +280,19 @@ contract CoreWallet is ERC721Receivable, ERC223Receiver, ERC1271 {
         //  removing their only available authorized key. Unfortunately, due to how the invocation forwarding
         //  works, we don't actually _know_ which signer was used to call this method, so there's no easy way
         //  to prevent this.
-        
+
         // TODO: Allowing the backup key to be set as an authorized address bypasses the recovery mechanisms.
-        //  Dapper can prevent this with offchain logic and the cosigner, but it would be nice to have 
+        //  Dapper can prevent this with offchain logic and the cosigner, but it would be nice to have
         //  this enforced by the smart contract logic itself.
-        
+
         require(_authorizedAddress != address(0), "Authorized addresses must not be zero.");
         require(_authorizedAddress != recoveryAddress, "Do not use the recovery address as an authorized address.");
         require(address(_cosigner) == address(0) || address(_cosigner) != recoveryAddress, "Do not use the recovery address as a cosigner.");
- 
+
         authorizations[authVersion + uint256(_authorizedAddress)] = _cosigner;
         emit Authorized(_authorizedAddress, _cosigner);
     }
-    
+
     /// @notice Performs an emergency recovery operation, removing all existing authorizations and setting
     ///  a sole new authorized address with optional cosigner. THIS IS A SCORCHED EARTH SOLUTION, and great
     ///  care should be taken to ensure that this method is never called unless it is a last resort. See the
@@ -331,7 +325,7 @@ contract CoreWallet is ERC721Receivable, ERC223Receiver, ERC1271 {
             address(authorizations[authVersion + uint256(_recoveryAddress)]) == address(0),
             "Do not use an authorized address as the recovery address."
         );
- 
+
         address previous = recoveryAddress;
         recoveryAddress = _recoveryAddress;
 
@@ -343,11 +337,11 @@ contract CoreWallet is ERC721Receivable, ERC223Receiver, ERC1271 {
     ///  get themselves a bit of gas refund in the bargin.
     /// @dev keys must be known to caller or else nothing is refunded
     /// @param _version the version of the mapping which you want to delete (unshifted)
-    /// @param _keys the authorization keys to delete 
+    /// @param _keys the authorization keys to delete
     function recoverGas(uint256 _version, address[] calldata _keys) external {
         // TODO: should this be 0xffffffffffffffffffffffff ?
         require(_version > 0 && _version < 0xffffffff, "Invalid version number.");
-        
+
         uint256 shiftedVersion = _version << 160;
 
         require(shiftedVersion < authVersion, "You can only recover gas from expired authVersions.");
@@ -368,12 +362,12 @@ contract CoreWallet is ERC721Receivable, ERC223Receiver, ERC1271 {
     /// @param _signature Signature byte array associated with `_data`
     /// @return Magic value `0x1626ba7e` upon success, 0 otherwise.
     function isValidSignature(bytes32 hash, bytes calldata _signature) external view returns (bytes4) {
-        
+
         // We 'hash the hash' for the following reasons:
         // 1. `hash` is not the hash of an Ethereum transaction
         // 2. signature must target this wallet to avoid replaying the signature for another wallet
         // with the same key
-        // 3. Gnosis does something similar: 
+        // 3. Gnosis does something similar:
         // https://github.com/gnosis/safe-contracts/blob/102e632d051650b7c4b0a822123f449beaf95aed/contracts/GnosisSafe.sol
         bytes32 operationHash = keccak256(
             abi.encodePacked(
@@ -401,7 +395,7 @@ contract CoreWallet is ERC721Receivable, ERC223Receiver, ERC1271 {
         } else {
             return 0;
         }
-            
+
         // check for valid signature
         if (signer == address(0)) {
             return 0;
@@ -422,7 +416,7 @@ contract CoreWallet is ERC721Receivable, ERC223Receiver, ERC1271 {
 
     /// @notice Query if this contract implements an interface. This function takes into account
     ///  interfaces we implement dynamically through delegates. For interfaces that are just a
-    ///  single method, using `setDelegate` will result in that method's ID returning true from 
+    ///  single method, using `setDelegate` will result in that method's ID returning true from
     ///  `supportsInterface`. For composite interfaces that are composed of multiple functions, it is
     ///  necessary to add the interface ID manually with `setDelegate(interfaceID,
     ///  COMPOSITE_PLACEHOLDER)`
@@ -485,7 +479,7 @@ contract CoreWallet is ERC721Receivable, ERC223Receiver, ERC1271 {
             nonce,
             authorizedAddress,
             data));
- 
+
         // recover signer
         address signer = ecrecover(operationHash, v, r, s);
 
@@ -500,7 +494,7 @@ contract CoreWallet is ERC721Receivable, ERC223Receiver, ERC1271 {
 
         // Get cosigner
         address requiredCosigner = address(authorizations[authVersion + uint256(signer)]);
-        
+
         // The operation should be approved if the signer address has no cosigner (i.e. signer == cosigner) or
         // if the actual cosigner matches the required cosigner.
         require(requiredCosigner == signer || requiredCosigner == msg.sender, "Invalid authorization.");
@@ -523,7 +517,7 @@ contract CoreWallet is ERC721Receivable, ERC223Receiver, ERC1271 {
         // `ecrecover` will in fact return 0 if given invalid
         // so perhaps this check is redundant
         require(v == 27 || v == 28, "Invalid signature version.");
-        
+
         uint256 nonce = nonces[msg.sender];
 
         // calculate hash
@@ -535,23 +529,22 @@ contract CoreWallet is ERC721Receivable, ERC223Receiver, ERC1271 {
             nonce,
             msg.sender,
             data));
- 
+
         // recover cosigner
         address cosigner = ecrecover(operationHash, v, r, s);
-        
+
         // check for valid signature
         require(cosigner != address(0), "Invalid signature.");
 
         // Get required cosigner
         address requiredCosigner = address(authorizations[authVersion + uint256(msg.sender)]);
-        
+
         // The operation should be approved if the signer address has no cosigner (i.e. signer == cosigner) or
         // if the actual cosigner matches the required cosigner.
         require(requiredCosigner == cosigner || requiredCosigner == msg.sender, "Invalid authorization.");
 
         // increment nonce to prevent replay attacks
         nonces[msg.sender] = nonce + 1;
- 
         internalInvoke(operationHash, data);
     }
 
@@ -561,15 +554,23 @@ contract CoreWallet is ERC721Receivable, ERC223Receiver, ERC1271 {
     /// @param r the r values for the signatures
     /// @param s the s values for the signatures
     /// @param nonce the nonce value for the signature
-    /// @param authorizedAddress the address of the signer; forces the signature to be unique and tied to the signers nonce 
+    /// @param authorizedAddress the address of the signer; forces the signature to be unique and tied to the signers nonce
     /// @param data The data containing the transactions to be invoked; see internalInvoke for details.
-    function invoke2(uint8[2] calldata v, bytes32[2] calldata r, bytes32[2] calldata s, uint256 nonce, address authorizedAddress, bytes calldata data) external {
+    function invoke2(
+            uint8[2] calldata v,
+            bytes32[2] calldata r,
+            bytes32[2] calldata s,
+            uint256 nonce,
+            address authorizedAddress,
+            bytes calldata data)
+            external
+            {
         // check signature versions
         // `ecrecover` will infact return 0 if given invalid
         // so perhaps these checks are redundant
         require(v[0] == 27 || v[0] == 28, "invalid signature version v[0]");
         require(v[1] == 27 || v[1] == 28, "invalid signature version v[1]");
- 
+
         bytes32 operationHash = keccak256(
             abi.encodePacked(
             EIP191_PREFIX,
@@ -578,7 +579,7 @@ contract CoreWallet is ERC721Receivable, ERC223Receiver, ERC1271 {
             nonce,
             authorizedAddress,
             data));
- 
+
         // recover signer and cosigner
         address signer = ecrecover(operationHash, v[0], r[0], s[0]);
         address cosigner = ecrecover(operationHash, v[1], r[1], s[1]);
@@ -595,7 +596,7 @@ contract CoreWallet is ERC721Receivable, ERC223Receiver, ERC1271 {
 
         // Get Mapping
         address requiredCosigner = address(authorizations[authVersion + uint256(signer)]);
-        
+
         // The operation should be approved if the signer address has no cosigner (i.e. signer == cosigner) or
         // if the actual cosigner matches the required cosigner.
         require(requiredCosigner == signer || requiredCosigner == cosigner, "Invalid authorization.");
@@ -606,7 +607,7 @@ contract CoreWallet is ERC721Receivable, ERC223Receiver, ERC1271 {
         internalInvoke(operationHash, data);
     }
 
-    /// @dev Internal invoke call, 
+    /// @dev Internal invoke call,
     /// @param operationHash The hash of the operation
     /// @param data The data to send to the `call()` operation
     ///  The data is prefixed with a global 1 byte revert flag
@@ -658,7 +659,7 @@ contract CoreWallet is ERC721Receivable, ERC223Receiver, ERC1271 {
                 // Load the length of the call data of the current operation
                 // 52 = to(20) + value(32)
                 let len := mload(add(memPtr, 52))
-                
+
                 // Compute a pointer to the end of the current operation
                 // 84 = to(20) + value(32) + size(32)
                 let opEnd := add(len, add(memPtr, 84))
@@ -699,7 +700,7 @@ contract CoreWallet is ERC721Receivable, ERC223Receiver, ERC1271 {
 
                 // increment our counter
                 numOps := add(numOps, 1)
-             
+
                 // Update mem pointer to point to the next sub-operation
                 memPtr := opEnd
             }
@@ -715,7 +716,7 @@ contract CoreWallet is ERC721Receivable, ERC223Receiver, ERC1271 {
     function depositToInvestmentContract() public {
         IInvestmentContract investmentContract = _getInvestmentContract();
         address[] memory tokenAddresses = investmentContract.getTokenAddresses();
-        for(uint i = 0; i < tokenAddresses.length; i++) {
+        for (uint i = 0; i < tokenAddresses.length; i++) {
           IERC20 token = IERC20(tokenAddresses[i]);
           uint balance = token.balanceOf(address(this));
           token.approve(address(investmentContract), balance);

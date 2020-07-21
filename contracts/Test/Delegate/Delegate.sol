@@ -1,4 +1,4 @@
-pragma solidity ^0.5.10;
+pragma solidity ^0.5.7;
 
 import "./SimpleInterface.sol";
 import "./CompositeInterface.sol";
@@ -16,7 +16,7 @@ contract Delegate is SimpleInterface, CompositeInterface {
     }
 
     function doSomethingThatReverts() pure external {
-        revert();
+        revert("Reverting the execution");
     }
 
     function doSomethingThatWritesToStorage() external {
