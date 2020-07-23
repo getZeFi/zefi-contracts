@@ -1,10 +1,6 @@
 pragma solidity ^0.5.7;
 import "../interfaces/Module.sol";
 
-/**
- * @title BaseWallet
- * @dev Simple modular wallet that authorises modules to call its invoke() method.
- */
 contract BaseWallet {
 
     // The implementation of the proxy
