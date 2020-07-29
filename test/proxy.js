@@ -16,9 +16,9 @@ describe("Test Proxy", function () {
         deployer = new etherlime.EtherlimeGanacheDeployer(accounts[0].secretKey);
         const registry = await deployer.deploy(Registry);
         walletImplementation = await deployer.deploy(Wallet);
-        module1 = await deployer.deploy(Module, {}, registry.contractAddress, ethers.constants.AddressZero, ethers.constants.HashZero);
-        module2 = await deployer.deploy(Module, {}, registry.contractAddress, ethers.constants.AddressZero, ethers.constants.HashZero);
-        module3 = await deployer.deploy(Module, {}, registry.contractAddress, ethers.constants.AddressZero, ethers.constants.HashZero);
+        module1 = await deployer.deploy(Module, {}, registry.contractAddress, ethers.constants.HashZero);
+        module2 = await deployer.deploy(Module, {}, registry.contractAddress, ethers.constants.HashZero);
+        module3 = await deployer.deploy(Module, {}, registry.contractAddress, ethers.constants.HashZero);
     });
 
     beforeEach(async () => {

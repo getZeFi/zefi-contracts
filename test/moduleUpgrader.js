@@ -32,5 +32,41 @@ describe("Test ModuleUpgrader", function () {
             let info = await registry.moduleInfo(module.contractAddress);
             assert.equal(ethers.utils.parseBytes32String(info), name, "module1 should be registered with the correct name");
         });
+
+        it("should add registered modules to a wallet", async () => {
+            // create modules
+            let initialModule = await deployer.deploy(Module, {}, registry.contractAddress);
+            let moduleToAdd = await deployer.deploy(Module, {}, registry.contractAddress);
+            // register module
+            await registry.registerModule(initialModule.contractAddress, ethers.utils.formatBytes32String("initial"));
+            await registry.registerModule(moduleToAdd.contractAddress, ethers.utils.formatBytes32String("added"));
+            // create wallet with initial module
+            let wallet = await deployer.deploy(Wallet);
+
+            await wallet.init(owner.address, [initialModule.contractAddress]);
+            let isAuthorised = await wallet.authorised(initialModule.contractAddress);
+            assert.equal(isAuthorised, true, "initial module should be authorised");
+            // add module to wallet
+            await initialModule.from(owner).addModule(wallet.contractAddress, moduleToAdd.contractAddress, { gasLimit: 1000000 });
+            isAuthorised = await wallet.authorised(moduleToAdd.contractAddress);
+            assert.equal(isAuthorised, true, "added module should be authorised");
+        });
+
+        it("should block addition of unregistered modules to a wallet", async () => {
+            // create modules
+            let initialModule = await deployer.deploy(Module, {}, registry.contractAddress);
+            let moduleToAdd = await deployer.deploy(Module, {}, registry.contractAddress);
+            // register initial module only
+            await registry.registerModule(initialModule.contractAddress, ethers.utils.formatBytes32String("initial"));
+            // create wallet with initial module
+            let wallet = await deployer.deploy(Wallet);
+            await wallet.init(owner.address, [initialModule.contractAddress]);
+            let isAuthorised = await wallet.authorised(initialModule.contractAddress);
+            assert.equal(isAuthorised, true, "initial module should be authorised");
+            // try (and fail) to add moduleToAdd to wallet
+            await assert.revert(initialModule.from(owner).addModule(wallet.contractAddress, moduleToAdd.contractAddress, { gasLimit: 1000000 }));
+            isAuthorised = await wallet.authorised(moduleToAdd.contractAddress);
+            assert.equal(isAuthorised, false, "unregistered module should not be authorised");
+        });
     })
 });
