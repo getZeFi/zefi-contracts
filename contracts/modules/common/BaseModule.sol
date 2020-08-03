@@ -4,6 +4,7 @@ import "../../interfaces/Module.sol";
 import "../../Wallet/BaseWallet.sol";
 import "../../upgrade/ModuleRegistry.sol";
 import "../../exchange/ERC20.sol";
+import "../../storage/GuardianStorage.sol";
 
 /**
  * @title BaseModule
@@ -16,11 +17,24 @@ contract BaseModule is Module {
     // The adddress of the module registry.
     ModuleRegistry internal registry;
 
+    // The address of the Guardian storage
+    GuardianStorage internal guardianStorage;
+
     event ModuleCreated(bytes32 name);
     event ModuleInitialised(address wallet);
 
-    constructor(ModuleRegistry _registry, bytes32 _name) public {
+    /**
+     * @dev Throws if the wallet is locked.
+     */
+    modifier onlyWhenUnlocked(BaseWallet _wallet) {
+        // solium-disable-next-line security/no-block-members
+        require(!guardianStorage.isLocked(_wallet), "BM: wallet must be unlocked");
+        _;
+    }
+
+    constructor(ModuleRegistry _registry, GuardianStorage _guardianStorage, bytes32 _name) public {
         registry = _registry;
+        guardianStorage = _guardianStorage;
         emit ModuleCreated(_name);
     }
 
