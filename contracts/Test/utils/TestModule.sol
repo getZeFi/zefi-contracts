@@ -18,7 +18,7 @@ contract TestModule  is BaseModule, OnlyOwnerModule {
     constructor(
         ModuleRegistry _registry
     )
-        BaseModule(_registry, NAME)
+        BaseModule(_registry, GuardianStorage(0), NAME)
         public
     {
         dapp = new TestDapp();
