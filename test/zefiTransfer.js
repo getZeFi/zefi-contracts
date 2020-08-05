@@ -83,4 +83,26 @@ describe("TransferManager", function () {
         });
     });
 
+    describe("ERC20 Token Approvals", () => {
+        async function approve({ signer = owner, amount }) {
+            const params = [wallet.contractAddress, erc20.contractAddress, spender.address, amount];
+            let txReceipt;
+            const tx = await zefiTransfer.from(signer).approveToken(...params);
+            txReceipt = await zefiTransfer.verboseWaitForTransaction(tx);
+            assert.isTrue(await utils.hasEvent(txReceipt, zefiTransfer, "Approved"), "should have generated Approved event");
+        }
+
+        it('should appprove an ERC20', async () => {
+            await approve({ amount: 10 });
+        });
+
+        it('should not appprove an ERC20 transfer when the signer is not the owner ', async () => {
+            try {
+                await approve({ signer: nonowner, amount: 10 });
+            } catch (error) {
+                assert.ok(await manager.isRevertReason(error, "must be an owner"));
+            }
+        });
+    });
+
 });
