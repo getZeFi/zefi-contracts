@@ -8,19 +8,17 @@ const { expect } = chai;
 chai.use(bnChai(BN));
 
 const Proxy = require("../build/Proxy");
-const BaseWallet = require("../build/BaseWallet");
+const Wallet = require("../build/BaseWallet");
 const Registry = require("../build/ModuleRegistry");
 const GuardianStorage = require("../build/GuardianStorage");
 const ZefiTransfer = require("../build/ZefiTransfer");
 const ERC20 = require("../build/TestERC20");
 const TestContract = require('../build/TestContract');
 
-const { ETH_TOKEN } = require("../utils/utilities.js");
+const ETH_TOKEN = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 
-const ETH_LIMIT = 1000000;
+const DECIMALS = 12;
 const ZERO_BYTES32 = ethers.constants.HashZero;
-
-const ACTION_TRANSFER = 0;
 
 const TestManager = require("../utils/test-manager");
 
@@ -38,7 +36,7 @@ describe("TransferManager", function () {
     let deployer;
     let registry;
     let guardianStorage;
-    let transferModule;
+    let zefiTransfer;
     let wallet;
     let walletImplementation;
     let erc20;
@@ -47,24 +45,42 @@ describe("TransferManager", function () {
     before(async () => {
         deployer = manager.newDeployer();
         registry = await deployer.deploy(Registry);
-
         guardianStorage = await deployer.deploy(GuardianStorage);
 
-        transferModule = await deployer.deploy(ZefiTransfer, {},
+        zefiTransfer = await deployer.deploy(ZefiTransfer, {},
             registry.contractAddress,
-            guardianStorage.contractAddress);
-      
-        await registry.registerModule(transferModule.contractAddress, ethers.utils.formatBytes32String("ZefiTransfer"));
-        walletImplementation = await deployer.deploy(BaseWallet);
+            guardianStorage.contractAddress
+        );
+        await registry.registerModule(zefiTransfer.contractAddress, ethers.utils.formatBytes32String("ZefiTransfer"));
     });
 
     beforeEach(async () => {
-        const proxy = await deployer.deploy(Proxy, {}, walletImplementation.contractAddress);
-        wallet = deployer.wrapDeployedContract(BaseWallet, proxy.contractAddress);
-        await wallet.init(owner.address, [transferModule.contractAddress]);
-    
-        const decimals = 12; // number of decimal for TOKN contract
-        
+        wallet = await deployer.deploy(Wallet);
+        await wallet.init(owner.address, [zefiTransfer.contractAddress]);
+        erc20 = await deployer.deploy(ERC20, {}, [infrastructure.address, wallet.contractAddress], 10000000, DECIMALS);
+        await infrastructure.sendTransaction({ to: wallet.contractAddress, value: ethers.utils.bigNumberify('1000000000000000000') });
+    });
+
+    describe("ETH and ERC20 transfers", () => {
+        async function transfer({ token, signer = owner, to, amount }) {
+            let fundsBefore = (token == ETH_TOKEN ? await deployer.provider.getBalance(to.address) : await token.balanceOf(to.address));
+            const params = [wallet.contractAddress, token == ETH_TOKEN ? ETH_TOKEN : token.contractAddress, to.address, amount, ZERO_BYTES32];
+            const tx = await zefiTransfer.from(signer).transferToken(...params);
+            let txReceipt = await zefiTransfer.verboseWaitForTransaction(tx);
+            assert.isTrue(await utils.hasEvent(txReceipt, zefiTransfer, "Transfer"), "should have generated Transfer event");
+
+            let fundsAfter = (token == ETH_TOKEN ? await deployer.provider.getBalance(to.address) : await token.balanceOf(to.address));
+            assert.equal(fundsAfter.sub(fundsBefore).toNumber(), amount, 'should have transfered amount');
+            return txReceipt;
+        }
+
+        it('should let the owner send ETH', async () => {
+            await transfer({ token: ETH_TOKEN, to: recipient, amount: 10000 });
+        });
+
+        it('should let the owner send ERC20', async () => {
+            await transfer({ token: erc20, to: recipient, amount: 10 });
+        });
     });
 
 });
