@@ -8,11 +8,6 @@ import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
  * by both Zefi and Non Zefi users.
  */
 contract EscrowManager {
-    bytes32 constant NAME = "EscrowManager";
-
-    // Mock token address of ETH
-    address constant internal ETH_TOKEN_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
-
     /**
      * @notice Container for payment request detail
      * @member from Payment creator
