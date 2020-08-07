@@ -1,9 +1,13 @@
 const ethers = require('ethers');
 const readline = require('readline');
 const ethereumUtil = require('ethereumjs-util');
-const etherlime = require('etherlime-lib');
 
 module.exports = {
+    createHash:(v, address) => {
+        return ethers.utils.solidityKeccak256(
+            ['bytes32', 'address'],[v, address]
+        )
+    },
 
     createAddressFromPrivateKey: (pk) => {
         return new ethers.Wallet(pk).address
