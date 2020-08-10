@@ -181,7 +181,6 @@ describe("Invest Manager with Compound", function () {
                 await cToken.from(borrower).mint(parseEther('20'));
                 tx = await cEther.from(borrower).borrow(parseEther('0.1'), { gasLimit: 8000000 });
                 txReceipt = await cEther.verboseWaitForTransaction(tx);
-                console.log('EVVVV:', utils.parseLogs(txReceipt, cEther, 'Failure'));
 
                 assert.isTrue(await utils.hasEvent(txReceipt, cEther, "Borrow"), "should have generated Borrow event");
             }
@@ -220,7 +219,105 @@ describe("Invest Manager with Compound", function () {
                 });
             }
 
-            for (i = 1; i < 6; i++) {
+            for (i = 1; i < 3; i++) {
+                testRemoveERC20Investment(i * 2000);
+                testRemoveERC20Investment(i * 2000);
+                testRemoveETHInvestment(i * 2000);
+                testRemoveETHInvestment(i * 2000);
+            }
+        });
+
+    });
+
+    describe("Investment through meta transaction relayer", () => {
+
+        async function addInvestmentThroughMetaTransaction(tokenAddress, amount, days) {
+            let txReceipt;
+            let investInEth = (tokenAddress == ETH_TOKEN) ? true : false;
+
+            if (investInEth) {
+                tx = await infrastructure.sendTransaction({ to: wallet.contractAddress, value: amount, gasLimit: 8000000 });
+            }
+            else {
+                await token.from(infrastructure).transfer(wallet.contractAddress, amount);
+            }
+            const params = [wallet.contractAddress, tokenAddress, amount, 0];
+            txReceipt = await manager.relay(investManager, 'addInvestment', params, wallet, [owner]);
+
+            assert.isTrue(await utils.hasEvent(txReceipt, investManager, "InvestmentAdded"), "should have generated InvestmentAdded event");
+
+            await accrueInterests(days, investInEth);
+
+            let output = await investManager.getInvestment(wallet.contractAddress, tokenAddress);
+            assert.isTrue(output._tokenValue > amount, 'investment should have gained value');
+
+            return output._tokenValue;
+        }
+
+        async function removeInvestmentThroughMetaTransaction(tokenAddress, fraction) {
+
+            let txReceipt;
+            let investInEth = (tokenAddress == ETH_TOKEN) ? true : false;
+
+            await addInvestmentThroughMetaTransaction(tokenAddress, parseEther('0.1'), 365);
+            let before = investInEth ? await cEther.balanceOf(wallet.contractAddress) : await cToken.balanceOf(wallet.contractAddress);
+
+            const params = [wallet.contractAddress, tokenAddress, fraction];
+            txReceipt = await manager.relay(investManager, 'removeInvestment', params, wallet, [owner]);
+            assert.isTrue(await utils.hasEvent(txReceipt, investManager, "InvestmentRemoved"), "should have generated InvestmentRemoved event");
+
+            let after = investInEth ? await cEther.balanceOf(wallet.contractAddress) : await cToken.balanceOf(wallet.contractAddress);
+            assert.isTrue(after == Math.ceil(before * (10000 - fraction) / 10000), "should have removed the correct fraction");
+        }
+
+        async function accrueInterests(days, investInEth) {
+            let tx, txReceipt;
+            // genrate borrows to create interests
+            await comptroller.from(borrower).enterMarkets([cEther.contractAddress, cToken.contractAddress], { gasLimit: 200000 });
+            if (investInEth) {
+                await token.from(borrower).approve(cToken.contractAddress, parseEther('20'));
+                await cToken.from(borrower).mint(parseEther('20'));
+                tx = await cEther.from(borrower).borrow(parseEther('0.1'), { gasLimit: 8000000 });
+                txReceipt = await cEther.verboseWaitForTransaction(tx);
+
+                assert.isTrue(await utils.hasEvent(txReceipt, cEther, "Borrow"), "should have generated Borrow event");
+            }
+            else {
+                await cEther.from(borrower).mint({ value: parseEther('2') });
+                tx = await cToken.from(borrower).borrow(parseEther('0.1'));
+                txReceipt = await cToken.verboseWaitForTransaction(tx);
+                assert.isTrue(await utils.hasEvent(txReceipt, cToken, "Borrow"), "should have generated Borrow event");
+            }
+            // increase time to accumulate interests
+            await manager.increaseTime(3600 * 24 * days);
+            await cToken.accrueInterest();
+            await cEther.accrueInterest();
+        }
+
+        describe("Add Investment", () => {
+
+            it('should invest in ERC20 for 1 year and gain interests', async () => {
+                await addInvestmentThroughMetaTransaction(token.contractAddress, parseEther('1'), 365);
+            });
+
+            it('should invest in ETH for 1 year and gain interests', async () => {
+                await addInvestmentThroughMetaTransaction(ETH_TOKEN, parseEther('1'), 365);
+            });
+        });
+
+        describe("Remove Investment", () => {
+            function testRemoveERC20Investment(fraction) {
+                it(`should remove ${fraction / 100}% of an ERC20 investment`, async () => {
+                    await removeInvestmentThroughMetaTransaction(token.contractAddress, fraction);
+                });
+            }
+            function testRemoveETHInvestment(fraction) {
+                it(`should remove ${fraction / 100}% of an ETH investment`, async () => {
+                    await removeInvestmentThroughMetaTransaction(token.contractAddress, fraction);
+                });
+            }
+
+            for (i = 1; i < 3; i++) {
                 testRemoveERC20Investment(i * 2000);
                 testRemoveERC20Investment(i * 2000);
                 testRemoveETHInvestment(i * 2000);
