@@ -91,8 +91,6 @@ describe("Invest Manager with Compound", function () {
         await token.from(liquidityProvider).approve(cToken.contractAddress, parseEther('100'));
         await cToken.from(liquidityProvider).mint(parseEther('10'));
 
-        /* Deploy Argent Architecture */
-
         compoundRegistry = await deployer.deploy(CompoundRegistry);
         await compoundRegistry.addCToken(ETH_TOKEN, cEther.contractAddress);
         await compoundRegistry.addCToken(token.contractAddress, cToken.contractAddress);

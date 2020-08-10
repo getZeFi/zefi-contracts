@@ -22,7 +22,7 @@ const ZERO_BYTES32 = ethers.constants.HashZero;
 
 const TestManager = require("../utils/test-manager");
 
-describe("TransferManager", function () {
+describe("ZefiTransfer", function () {
     this.timeout(10000);
   
     const manager = new TestManager();
