@@ -83,6 +83,27 @@ describe("TransferManager", function () {
         });
     });
 
+    describe("ETH and ERC20 transfers through meta transaction relayer", () => {
+        async function transferThroughRelayer({ token, signer = owner, to, amount }) {
+            let fundsBefore = (token == ETH_TOKEN ? await deployer.provider.getBalance(to.address) : await token.balanceOf(to.address));
+            const params = [wallet.contractAddress, token == ETH_TOKEN ? ETH_TOKEN : token.contractAddress, to.address, amount, ZERO_BYTES32];
+            let txReceipt = await manager.relay(zefiTransfer, 'transferToken', params, wallet, [signer]);
+            assert.isTrue(await utils.hasEvent(txReceipt, zefiTransfer, "Transfer"), "should have generated Transfer event");
+
+            let fundsAfter = (token == ETH_TOKEN ? await deployer.provider.getBalance(to.address) : await token.balanceOf(to.address));
+            assert.equal(fundsAfter.sub(fundsBefore).toNumber(), amount, 'should have transfered amount');
+            return txReceipt;
+        }
+
+        it('should let the owner send ETH', async () => {
+            await transferThroughRelayer({ token: ETH_TOKEN, to: recipient, amount: 10000 });
+        });
+
+        it('should let the owner send ERC20', async () => {
+            await transferThroughRelayer({ token: erc20, to: recipient, amount: 10 });
+        });
+    });
+
     describe("ERC20 Token Approvals", () => {
         async function approve({ signer = owner, amount }) {
             const params = [wallet.contractAddress, erc20.contractAddress, spender.address, amount];

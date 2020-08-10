@@ -1,6 +1,7 @@
 pragma solidity ^0.5.7;
 
 import "./common/BaseModule.sol";
+import "./common/RelayerModule.sol";
 import "./common/OnlyOwnerModule.sol";
 import "./utils/CompoundRegistry.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
@@ -28,7 +29,7 @@ interface ICToken {
  * @title Compound
  * @dev Module to invest tokens in Compound
  */
-contract Compound is BaseModule, OnlyOwnerModule {
+contract Compound is BaseModule, RelayerModule, OnlyOwnerModule {
     bytes32 constant NAME = "Compound";
 
     // The Compound IComptroller contract

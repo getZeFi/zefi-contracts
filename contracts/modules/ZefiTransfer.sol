@@ -2,6 +2,7 @@ pragma solidity ^0.5.7;
 
 import "./common/OnlyOwnerModule.sol";
 import "./common/BaseModule.sol";
+import "./common/RelayerModule.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 /**
@@ -9,7 +10,7 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
  * @dev Module to transfer and approve tokens (ETH or ERC20) or data (contract call).
  */
 
-contract ZefiTransfer is BaseModule, OnlyOwnerModule {
+contract ZefiTransfer is BaseModule, RelayerModule, OnlyOwnerModule {
     bytes32 constant NAME = "ZefiTransfer";
 
     bytes4 private constant ERC1271_ISVALIDSIGNATURE_BYTES = bytes4(keccak256("isValidSignature(bytes,bytes)"));
@@ -102,6 +103,34 @@ contract ZefiTransfer is BaseModule, OnlyOwnerModule {
         bytes memory methodData = abi.encodeWithSignature("approve(address,uint256)", _spender, _amount);
         invokeWallet(address(_wallet), _token, 0, methodData);
         emit Approved(address(_wallet), _token, _amount, _spender);
+    }
+
+    // *************** Implementation of RelayerModule methods ********************* //
+
+    // Overrides refund to add the refund
+    function refund(BaseWallet _wallet, uint _gasUsed, uint _gasPrice, uint _gasLimit, uint _signatures, address _relayer) internal {
+        // 21000 (transaction) + 7620 (execution of refund) + 7324 (execution of updateDailySpent) + 672 to log the event + _gasUsed
+        uint256 amount = 36616 + _gasUsed;
+        if (_gasPrice > 0 && _signatures > 0 && amount <= _gasLimit) {
+            if (_gasPrice > tx.gasprice) {
+                amount = amount * tx.gasprice;
+            } else {
+                amount = amount * _gasPrice;
+            }
+            invokeWallet(address(_wallet), _relayer, amount, EMPTY_BYTES);
+        }
+    }
+
+    // Overrides verifyRefund to add the refund
+    function verifyRefund(BaseWallet _wallet, uint _gasUsed, uint _gasPrice, uint _signatures) internal view returns (bool) {
+        if (_gasPrice > 0 && _signatures > 0 && (
+            address(_wallet).balance < _gasUsed * _gasPrice ||
+            _wallet.authorised(address(this)) == false
+        ))
+        {
+            return false;
+        }
+        return true;
     }
 
 }

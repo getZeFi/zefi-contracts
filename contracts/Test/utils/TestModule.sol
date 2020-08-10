@@ -1,6 +1,7 @@
 pragma solidity ^0.5.7;
 
 import "../../modules/common/BaseModule.sol";
+import "../../modules/common/RelayerModule.sol";
 import "../../modules/common/OnlyOwnerModule.sol";
 import "./TestDapp.sol";
 
@@ -8,7 +9,7 @@ import "./TestDapp.sol";
  * @title TestModule
  * @dev Test Module
  */
-contract TestModule  is BaseModule, OnlyOwnerModule {
+contract TestModule  is BaseModule, RelayerModule, OnlyOwnerModule {
     bytes32 constant NAME = "TestModule";
 
     TestDapp public dapp;
@@ -45,5 +46,30 @@ contract TestModule  is BaseModule, OnlyOwnerModule {
 
     function fail(address _wallet, string calldata reason) external {
         invokeWallet(_wallet, address(dapp), 0, abi.encodeWithSignature("doFail(string)", reason));
+    }
+
+    // *************** Implementation of RelayerModule methods ********************* //
+
+    // Overrides to use the incremental nonce and save some gas
+    function checkAndUpdateUniqueness(BaseWallet _wallet, uint256 _nonce, bytes32 /* _signHash */) internal returns (bool) {
+        return checkAndUpdateNonce(_wallet, _nonce);
+    }
+
+    function validateSignatures(
+        BaseWallet _wallet,
+        bytes memory /* _data */,
+        bytes32 _signHash,
+        bytes memory _signatures
+    )
+        internal
+        view
+        returns (bool)
+    {
+        address signer = recoverSigner(_signHash, _signatures, 0);
+        return isOwner(_wallet, signer); // "GM: signer must be owner"
+    }
+
+    function getRequiredSignatures(BaseWallet /* _wallet */, bytes memory /*_data */) internal view returns (uint256) {
+        return 1;
     }
 }
