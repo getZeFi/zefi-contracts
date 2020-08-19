@@ -4,66 +4,38 @@ Smart contracts and client libraries for ZeFi
 
 ## Getting started
 
-1. Install NodeJS, Ganache and Truffle: 
+## Install
 
-```
-npm install -g ganache-cli truffle
-```
-
-2. Clone this repo:
-
-```
-git clone https://github.com/getZeFi/zefi-contracts
-```
-
-3. Install dependencies:
-
+Install requirements with npm:
 ```
 npm install
 ```
 
-4. Start Ganache (local development Blockchain):
+## Compile
 
+Compile the contracts:
 ```
-ganache-cli
-```
-
-5. Deploy smart contracts
-
-```
-npm run deploy
+npm run compile
 ```
 
-The addresses of the deployed contracts can be found in the json files in  `build/contracts`
+## Test
 
-## Running tests
-
-First, make sure that you are running Ganache:
-
+Launch ganache:
 ```
-ganache-cli
+npm run ganache
 ```
 
-In another terminal, run:
-
+Run the tests:
 ```
 npm run test
 ```
-
-This will run the tests inside the test folder.
 
 
 ## Smart contracts
 
 Main contracts
 
-* WalletFactory.sol: The factory that deploys new wallets
-* CoreWallet.sol: that's where we have the core of the logic  
-* InvestmentContract.sol: This allow to invest and withdraw from Compound
-
-Other contracts
-
-* CDaiMock: mock of Compound cDai
-* StandardTokenMock: mock of ERC20 tokens
+* ZefiWalletFactory.sol: The factory that deploys new wallets
+* Compound.sol: This allow to invest and withdraw from Compound
 
 
